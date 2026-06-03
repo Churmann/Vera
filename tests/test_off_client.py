@@ -114,3 +114,56 @@ async def test_fetch_product_raises_not_found(settings):
         await client.fetch_product("999")
     await client.aclose()
     assert exc.value.kind == "not_found"
+
+
+@respx.mock
+async def test_fetch_product_collapses_additive_subtypes(settings):
+    """e322i and e322ii are subtypes of e322 — collapse to base, deduplicate."""
+    respx.get("https://world.openfoodfacts.org/api/v2/product/456.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Test Product",
+            "additives_tags": [
+                "en:e322-lecithins",
+                "en:e322i-soya-lecithin",
+                "en:e322ii-sunflower-lecithin",
+            ],
+        }})
+    )
+    client = OFFClient(settings)
+    product = await client.fetch_product("456")
+    await client.aclose()
+    assert "e322" in product.additives
+    assert "e322i" not in product.additives
+    assert "e322ii" not in product.additives
+    assert product.additives.count("e322") == 1
+
+
+@respx.mock
+async def test_fetch_product_preserves_letter_variant_additives(settings):
+    """e160a (beta-carotene) is a distinct additive — do NOT collapse to e160."""
+    respx.get("https://world.openfoodfacts.org/api/v2/product/789.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Test Product",
+            "additives_tags": ["en:e160a-beta-carotene"],
+        }})
+    )
+    client = OFFClient(settings)
+    product = await client.fetch_product("789")
+    await client.aclose()
+    assert "e160a" in product.additives
+    assert "e160" not in product.additives
+
+
+@respx.mock
+async def test_fetch_product_uses_first_brand(settings):
+    """Multiple comma-separated brands should show only the first."""
+    respx.get("https://world.openfoodfacts.org/api/v2/product/321.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella",
+            "brands": "Nutella, Yum yum, Ferrero",
+        }})
+    )
+    client = OFFClient(settings)
+    product = await client.fetch_product("321")
+    await client.aclose()
+    assert product.brand == "Nutella"

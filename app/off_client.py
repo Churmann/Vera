@@ -95,13 +95,28 @@ class OFFClient:
         await self._client.aclose()
 
 
+import re as _re
+# OFF uses Roman-numeral suffixes for subtypes (e322i, e322ii, e500iii).
+# Single-letter suffixes (e160a, e160b, e160c) mark genuinely distinct additives — don't strip those.
+_ROMAN_SUBTYPE = _re.compile(r"^(e\d+)([ivx]+)$")
+
+
+def _collapse_e_number(code: str) -> str:
+    m = _ROMAN_SUBTYPE.match(code)
+    return m.group(1) if m else code
+
+
 def _normalise(off_id: str, p: dict) -> NormalisedProduct:
+    seen: set[str] = set()
     additives: list[str] = []
     for tag in p.get("additives_tags", []):
         parts = tag.split(":")
         code_part = parts[-1].split("-")[0] if parts else ""
         if code_part.startswith("e") and len(code_part) >= 2:
-            additives.append(code_part)
+            base = _collapse_e_number(code_part)
+            if base not in seen:
+                seen.add(base)
+                additives.append(base)
 
     grade = (p.get("nutriscore_grade") or "").upper().strip()
     grade = grade if grade in ("A", "B", "C", "D", "E") else None
@@ -119,7 +134,7 @@ def _normalise(off_id: str, p: dict) -> NormalisedProduct:
     return NormalisedProduct(
         off_id=off_id,
         name=(p.get("product_name") or "").strip() or "Unknown product",
-        brand=(p.get("brands") or "").strip() or None,
+        brand=(p.get("brands") or "").split(",")[0].strip() or None,
         nutriscore_grade=grade,
         nova_group=nova,
         additives=additives,
