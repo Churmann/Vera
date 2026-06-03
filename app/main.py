@@ -1,10 +1,6 @@
 import json
-import ssl
 from contextlib import asynccontextmanager
 from pathlib import Path
-
-import truststore
-truststore.inject_into_ssl()  # use OS cert store so AVG/corp HTTPS inspection works
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse

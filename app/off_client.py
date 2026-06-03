@@ -1,7 +1,9 @@
+import ssl
 import time
 from dataclasses import dataclass
 
 import httpx
+import truststore
 
 from app.config import Settings
 from app.models import NormalisedProduct, OFFError
@@ -24,6 +26,7 @@ class OFFClient:
         self._client = httpx.AsyncClient(
             headers={"User-Agent": settings.off_user_agent},
             timeout=settings.off_request_timeout,
+            verify=truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
         )
         self._cache: dict[str, tuple[NormalisedProduct, float]] = {}
         self._ttl = settings.off_cache_ttl
