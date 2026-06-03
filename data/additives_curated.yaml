@@ -1,0 +1,139 @@
+e102:
+  name: "Tartrazine"
+  risk_level: "moderate"
+  evidence_summary: "Six EU-approved azo dyes, including tartrazine, were linked to increased hyperactivity in children in a 2007 Lancet RCT (McCann et al.). The EU now requires a warning label: 'may have an adverse effect on activity and attention in children.'"
+  dose_context: "Effects were observed at doses achievable through normal diet in children. Adults appear less sensitive. The EFSA re-evaluated and confirmed the warning in 2009."
+  source_url: "https://doi.org/10.1016/S0140-6736(07)61306-3"
+
+e110:
+  name: "Sunset yellow FCF"
+  risk_level: "moderate"
+  evidence_summary: "One of the six 'Southampton Six' azo dyes associated with hyperactivity in children in the McCann 2007 Lancet trial. EU requires the warning label 'may have an adverse effect on activity and attention in children.'"
+  dose_context: "Effects observed at doses of 20-30 mg/day in children combined with sodium benzoate. ADI set at 4 mg/kg bw/day by EFSA (2009)."
+  source_url: "https://doi.org/10.1016/S0140-6736(07)61306-3"
+
+e129:
+  name: "Allura red AC"
+  risk_level: "moderate"
+  evidence_summary: "Part of the Southampton Six azo dyes. Associated with hyperactivity in children in the McCann 2007 Lancet study. EU requires the warning label 'may have an adverse effect on activity and attention in children.'"
+  dose_context: "ADI set at 7 mg/kg bw/day by EFSA. The hyperactivity effect was observed at intakes of 25-35 mg/day in children."
+  source_url: "https://doi.org/10.1016/S0140-6736(07)61306-3"
+
+e211:
+  name: "Sodium benzoate"
+  risk_level: "moderate"
+  evidence_summary: "When combined with certain azo dyes (particularly E102 tartrazine), sodium benzoate was associated with increased hyperactivity in children in the McCann 2007 Lancet study. Also converts to benzene (a carcinogen) when combined with vitamin C (ascorbic acid) in acidic conditions."
+  dose_context: "ADI set at 5 mg/kg bw/day by EFSA. The combination effect with azo dyes is the primary concern, not sodium benzoate alone."
+  source_url: "https://doi.org/10.1016/S0140-6736(07)61306-3"
+
+e220:
+  name: "Sulphur dioxide"
+  risk_level: "moderate"
+  evidence_summary: "Sulphur dioxide and sulphites can trigger asthma attacks and allergic reactions in sensitive individuals, particularly asthmatics. EU law requires mandatory labelling when present above 10 mg/kg or 10 mg/litre."
+  dose_context: "Risk is concentrated in people with asthma (~10% of asthmatics are sensitive). For non-asthmatics, standard dietary exposure is generally safe. ADI: 0.7 mg/kg bw/day (EFSA 2016)."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4526"
+
+e250:
+  name: "Sodium nitrite"
+  risk_level: "high"
+  evidence_summary: "IARC classifies consumption of processed meats (cured with nitrites) as Group 1 carcinogenic to humans, based on sufficient evidence for colorectal cancer. Nitrites react with amines in meat to form nitrosamines, which are potent carcinogens. EFSA (2017) confirmed the risk."
+  dose_context: "The carcinogenic risk is linked to processed meat consumption overall (e.g., 50 g/day increases colorectal cancer risk by ~18%), not specifically to nitrite dose. The nitrite itself has an ADI of 0.07 mg/kg bw/day, which is easily exceeded in high processed-meat diets."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4786"
+
+e320:
+  name: "Butylated hydroxyanisole (BHA)"
+  risk_level: "high"
+  evidence_summary: "IARC classifies BHA as Group 2B (possibly carcinogenic to humans), based on animal studies showing stomach tumours at high doses. The US National Toxicology Program lists it as 'reasonably anticipated to be a human carcinogen.'"
+  dose_context: "Carcinogenicity was observed in rodents at doses far exceeding typical human dietary exposure. However, given the weight of evidence, many countries have restricted or are reviewing its use. ADI: 0-0.5 mg/kg bw/day (JECFA)."
+  source_url: "https://monographs.iarc.who.int/agents-classified-by-the-iarc-monographs/"
+
+e321:
+  name: "Butylated hydroxytoluene (BHT)"
+  risk_level: "moderate"
+  evidence_summary: "Some animal studies suggest BHT may promote tumour growth at high doses, though evidence for human carcinogenicity is not established. EFSA (2012) concluded it was not genotoxic at current exposure levels but called for more data."
+  dose_context: "ADI: 0-0.25 mg/kg bw/day (EFSA 2012). Typical dietary exposure is well below this for most consumers."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2588"
+
+e407:
+  name: "Carrageenan"
+  risk_level: "moderate"
+  evidence_summary: "Degraded carrageenan (poligeenan) causes intestinal inflammation in animal models and is classified as a possible carcinogen (IARC Group 2B). Food-grade carrageenan is not degraded, but concerns remain about degradation in the gut. EFSA (2018) concluded food-grade carrageenan is safe at current intakes but noted uncertainty."
+  dose_context: "Evidence comes mainly from animal studies using doses higher than typical dietary exposure. Some researchers advise caution for people with inflammatory bowel disease."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5238"
+
+e415:
+  name: "Xanthan gum"
+  risk_level: "low"
+  evidence_summary: "Xanthan gum is a well-studied polysaccharide fermented by Xanthomonas campestris. EFSA and FDA consider it safe with no ADI needed. It is not absorbed in the digestive tract and acts as dietary fibre."
+  dose_context: "No known safety concerns at dietary levels. At very high intakes (>15 g/day), it can cause flatulence and loose stools as with other fibres."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1729"
+
+e440:
+  name: "Pectins"
+  risk_level: "low"
+  evidence_summary: "Pectin is a naturally occurring polysaccharide found in fruit cell walls. It acts as dietary fibre and has no known toxicity. EFSA and FDA both confirm it is safe with no ADI needed."
+  dose_context: "No adverse effects observed at any dietary level. High intakes may reduce mineral absorption slightly due to chelation, but this is not a concern at typical food levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1386"
+
+e621:
+  name: "Monosodium glutamate (MSG)"
+  risk_level: "low"
+  evidence_summary: "MSG is the sodium salt of glutamic acid, an amino acid found naturally in many foods. EFSA (2017) concluded that MSG does not pose a safety concern at current dietary intakes. 'Chinese restaurant syndrome' has not been reproducibly demonstrated in double-blind studies."
+  dose_context: "ADI of 30 mg/kg bw/day set by EFSA as a precautionary measure. Average dietary exposure (~2-3 g/day) is well below this. High intakes (>5 g) may cause transient symptoms in sensitive individuals."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4910"
+
+e950:
+  name: "Acesulfame K"
+  risk_level: "moderate"
+  evidence_summary: "Acesulfame K is approved by EFSA and FDA. Some animal studies have raised concerns about effects on insulin response and gut microbiome at high doses, but human evidence is limited. EFSA last evaluated it in 2000 and noted data gaps."
+  dose_context: "ADI: 9 mg/kg bw/day (EFSA). Typical consumer exposure is well below this. Concerns are primarily about long-term metabolic effects, which remain understudied."
+  source_url: "https://www.efsa.europa.eu/en/topics/topic/sweeteners"
+
+e951:
+  name: "Aspartame"
+  risk_level: "moderate"
+  evidence_summary: "In July 2023, IARC classified aspartame as Group 2B (possibly carcinogenic), based on limited evidence from observational studies. JECFA simultaneously maintained its ADI, stating current evidence does not establish a causal link at typical dietary intakes. People with phenylketonuria (PKU) must avoid it."
+  dose_context: "ADI: 40 mg/kg bw/day (JECFA/EFSA). A 70 kg adult would need to consume ~9-14 cans of diet soft drink daily to reach the ADI. The IARC Group 2B classification is based on very limited evidence and does not imply significant risk at normal intakes."
+  source_url: "https://www.iarc.who.int/news-events/iarc-monographs-evaluate-the-carcinogenicity-of-aspartame/"
+
+e952:
+  name: "Cyclamate"
+  risk_level: "high"
+  evidence_summary: "Cyclamate was banned in the United States in 1969 after animal studies suggested it may cause bladder cancer (in combination with saccharin). It remains banned in the US and several other countries. It is permitted in the EU at restricted levels."
+  dose_context: "ADI: 7 mg/kg bw/day in the EU. The US ban remains in place. Regulatory status varies significantly by country."
+  source_url: "https://www.efsa.europa.eu/en/topics/topic/sweeteners"
+
+e954:
+  name: "Saccharin"
+  risk_level: "moderate"
+  evidence_summary: "Saccharin was placed on the US NTP carcinogen list in 1981 due to bladder tumours in male rats, but was delisted in 2000. The mechanism was found to be rat-specific and not applicable to humans. EFSA and FDA now consider it safe at current intakes."
+  dose_context: "ADI: 5 mg/kg bw/day (EFSA). Typical dietary exposure is well below this. The carcinogenic effect in rats was caused by a mechanism unique to male rats that does not occur in humans."
+  source_url: "https://www.efsa.europa.eu/en/topics/topic/sweeteners"
+
+e160a:
+  name: "Beta-carotene"
+  risk_level: "low"
+  evidence_summary: "Beta-carotene is a natural pigment and precursor to vitamin A. As a food additive, it is generally recognised as safe. High-dose supplements (not food-level additives) were associated with increased lung cancer risk in smokers in two large trials."
+  dose_context: "As a food additive, exposure is far below the levels used in the supplement trials (20-30 mg/day vs. typical additive exposure <2 mg/day). No safety concern at food additive levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2036"
+
+e471:
+  name: "Mono- and diglycerides of fatty acids"
+  risk_level: "low"
+  evidence_summary: "Mono- and diglycerides are emulsifiers derived from glycerol and fatty acids (often from palm oil, soy, or sunflower). They are structurally similar to natural fats and are metabolised the same way. EFSA considers them safe with no ADI needed."
+  dose_context: "No toxicological concern at dietary levels. The main sustainability concern is sourcing: palm-oil derived versions are associated with deforestation, though this is an environmental rather than health consideration."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/3765"
+
+e955:
+  name: "Sucralose"
+  risk_level: "low"
+  evidence_summary: "Sucralose is a chlorinated sucrose derivative. EFSA and FDA consider it safe. A 2023 study raised concerns about genotoxicity at high doses in mice, but EFSA reviewed it and concluded current evidence does not support a safety concern at dietary intake levels."
+  dose_context: "ADI: 15 mg/kg bw/day (EFSA 2017). Typical consumer exposure is well below this. The 2023 genotoxicity findings used very high doses not representative of dietary exposure."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4798"
+
+e960:
+  name: "Steviol glycosides"
+  risk_level: "low"
+  evidence_summary: "Steviol glycosides are natural sweeteners extracted from the Stevia rebaudiana plant. EFSA and FDA/GRAS consider them safe. They are not metabolised by human enzymes and are excreted unchanged."
+  dose_context: "ADI: 4 mg/kg bw/day as steviol equivalents (EFSA 2015). Typical dietary exposure is well within this. No adverse effects observed in studies up to the ADI."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4146"
