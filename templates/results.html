@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Results for "{{ query }}" — Vera{% endblock %}
+{% block content %}
+<div class="results-header">
+  <a href="/" class="back-link">← Search again</a>
+  <h2>Results for "{{ query }}"</h2>
+</div>
+{% if results %}
+<ul class="product-list">
+  {% for p in results %}
+  <li class="product-card">
+    <a href="/product/{{ p.off_id }}" class="product-link">
+      {% if p.image_url %}
+      <img src="{{ p.image_url }}" alt="{{ p.name }}" class="product-thumb" loading="lazy">
+      {% else %}
+      <div class="product-thumb product-thumb--placeholder"></div>
+      {% endif %}
+      <div class="product-info">
+        <span class="product-name">{{ p.name }}</span>
+        {% if p.brand %}<span class="product-brand">{{ p.brand }}</span>{% endif %}
+      </div>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="no-results">No products found for "{{ query }}". Try a different search term.</p>
+{% endif %}
+{% endblock %}

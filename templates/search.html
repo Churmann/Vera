@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Search Food Products — Vera{% endblock %}
+{% block content %}
+<section class="search-hero">
+  <h1>See what's really in your food.</h1>
+  <p class="tagline">Evidence-based scoring. Visible weights. No opaque verdicts.</p>
+  <form action="/search" method="get" class="search-form">
+    <input type="search" name="q" placeholder="e.g. Nutella, Activia yoghurt…"
+           autocomplete="off" autofocus value="{{ request.query_params.get('q', '') }}">
+    <button type="submit">Search</button>
+  </form>
+  {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
+</section>
+{% endblock %}

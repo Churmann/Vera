@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Vera{% endblock %}
+
+{% block content %}
+<div class="product-header">
+  {% if product.image_url %}
+  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-hero-img">
+  {% endif %}
+  <div class="product-header-info">
+    <a href="javascript:history.back()" class="back-link">← Back to results</a>
+    <h1>{{ product.name }}</h1>
+    {% if product.brand %}<p class="brand">{{ product.brand }}</p>{% endif %}
+    <div class="confidence-badge confidence-badge--{{ result.confidence.value }}"
+         aria-label="Data confidence: {{ result.confidence.value }}">
+      <span>{{ result.confidence.value | title }} data confidence</span>
+      {% if result.confidence_notes %}
+      <span class="confidence-tooltip">{{ result.confidence_notes | join(' ') }}</span>
+      {% endif %}
+    </div>
+    <a href="{{ result.off_url }}" target="_blank" rel="noopener" class="off-link">
+      View on Open Food Facts ↗
+    </a>
+  </div>
+</div>
+
+<section class="overall-score">
+  <div class="score-display">
+    <span class="score-number" id="overall-score-number">{{ default_score }}</span>
+    <span class="score-label" id="overall-score-label">
+      {% if default_score >= 70 %}Good{% elif default_score >= 40 %}Mixed{% else %}Poor{% endif %}
+    </span>
+  </div>
+  <p class="score-note">Based on the weights below.</p>
+</section>
+
+<section class="weight-controls">
+  <h2>Adjust Weights</h2>
+  <p class="weight-note">Drag to reprioritise. Weights always sum to 100%.</p>
+  {% for dim in result.dimensions %}
+  <div class="weight-row">
+    <label for="weight-{{ dim.id }}">
+      <span class="weight-label">{{ dim.label }}</span>
+      <span class="weight-value" id="weight-value-{{ dim.id }}">{{ (dim.weight_default * 100) | int }}%</span>
+    </label>
+    <input type="range" id="weight-{{ dim.id }}" class="weight-slider"
+           data-dim="{{ dim.id }}" min="0" max="100"
+           value="{{ (dim.weight_default * 100) | int }}">
+  </div>
+  {% endfor %}
+  <button class="reset-weights" id="reset-weights">Reset to defaults</button>
+</section>
+
+<section class="dimensions" id="dimensions">
+  {% for dim in result.dimensions %}
+  <div class="dimension-card dimension-card--{{ dim.id }}" id="dim-card-{{ dim.id }}"
+       data-score="{{ dim.score }}" data-weight="{{ dim.weight_default }}">
+    <div class="dimension-header">
+      <div class="dimension-title">
+        <h3>{{ dim.label }}</h3>
+        <span class="dimension-derivation">{{ dim.input_label }} → {{ dim.input_value }}/100</span>
+      </div>
+      <div class="dimension-score-badge">{{ dim.score }}</div>
+    </div>
+    <p class="dimension-summary">{{ dim.summary }}</p>
+    {% if dim.positives %}
+    <div class="dimension-positives">
+      <h4>Positives</h4>
+      <ul>{% for pos in dim.positives %}<li>{{ pos }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if dim.flags %}
+    <div class="dimension-flags">
+      <h4>Flags</h4>
+      {% for flag in dim.flags %}
+      <details class="evidence-card evidence-card--{{ flag.risk_level.value }}">
+        <summary>
+          <span class="risk-chip risk-chip--{{ flag.risk_level.value }}">{{ flag.risk_level.value | title }}</span>
+          <span class="additive-name">{{ flag.name }}</span>
+          <span class="additive-enum">({{ flag.e_number | upper }})</span>
+        </summary>
+        <div class="evidence-body">
+          <p><strong>Evidence:</strong> {{ flag.evidence_summary }}</p>
+          <p><strong>Dose/context:</strong> {{ flag.dose_context }}</p>
+          {% if flag.source_url %}
+          <a href="{{ flag.source_url }}" target="_blank" rel="noopener" class="source-link">Source ↗</a>
+          {% endif %}
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>
+
+<script type="application/json" id="score-data">{{ score_data_json | safe }}</script>
+<script type="application/json" id="default-weights">{{ default_weights | tojson | safe }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/scorer.js"></script>
+{% endblock %}
