@@ -101,7 +101,7 @@ Adding cosmetics later means writing `CosmeticsScoringEngine` that satisfies thi
 - `dose_context: str`
 - `source_url: str | None`
 
-**`ConfidenceLevel`**: `high` (Nutri-Score + NOVA + additives all present), `medium` (one missing), `low` (two or more missing).
+**`ConfidenceLevel`**: `high` (Nutri-Score grade + NOVA group both present), `medium` (one of the two missing), `low` (both missing). Additives do not affect confidence — an empty additives list means the product has no additives, not that data is missing; `nutriscore_grade is None` and `nova_group is None` are the only signals of incomplete data.
 
 ### Scoring tables (`scoring/tables.py`)
 
