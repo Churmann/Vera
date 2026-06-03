@@ -42,6 +42,8 @@ class OFFClient:
 
         if resp.status_code == 429:
             raise OFFError("Rate limit reached", "rate_limited")
+        if resp.status_code >= 500:
+            raise OFFError(f"Open Food Facts returned {resp.status_code}", "network_error")
         resp.raise_for_status()
 
         results = []
@@ -77,6 +79,8 @@ class OFFClient:
             raise OFFError(f"Product {off_id} not found", "not_found")
         if resp.status_code == 429:
             raise OFFError("Rate limit reached", "rate_limited")
+        if resp.status_code >= 500:
+            raise OFFError(f"Open Food Facts returned {resp.status_code}", "network_error")
         resp.raise_for_status()
 
         data = resp.json()
