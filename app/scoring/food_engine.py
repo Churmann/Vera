@@ -2,6 +2,7 @@ from app.models import ConfidenceLevel, NormalisedProduct, ScoreResult
 from app.scoring.additive_scorer import AdditiveScorer
 from app.scoring.nova_scorer import NovaScorer
 from app.scoring.nutrition_scorer import NutritionScorer
+from app.scoring.tables import NUTRITION_CAP_THRESHOLD, POOR_SCORE_CAP
 
 
 class FoodScoringEngine:
@@ -11,16 +12,24 @@ class FoodScoringEngine:
         self._nova = NovaScorer()
 
     def score(self, product: NormalisedProduct) -> ScoreResult:
+        nutrition_dim = self._nutrition.score(product)
+        additives_dim = self._additives.score(product)
+        nova_dim = self._nova.score(product)
         confidence, notes = _confidence(product)
+
+        cap_reasons: list[str] = []
+        if nutrition_dim.score <= NUTRITION_CAP_THRESHOLD:
+            cap_reasons.append("nutritionally poor (Nutri-Score D or E)")
+        if nova_dim.score == 0:
+            cap_reasons.append("ultra-processed (NOVA group 4)")
+
         return ScoreResult(
-            dimensions=[
-                self._nutrition.score(product),
-                self._additives.score(product),
-                self._nova.score(product),
-            ],
+            dimensions=[nutrition_dim, additives_dim, nova_dim],
             confidence=confidence,
             confidence_notes=notes,
             off_url=product.raw_off_url,
+            score_cap=POOR_SCORE_CAP if cap_reasons else None,
+            score_cap_reasons=cap_reasons,
         )
 
 

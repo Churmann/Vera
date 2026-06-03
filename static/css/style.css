@@ -133,6 +133,11 @@ a { color: inherit; }
 .score-number { font-size: 4rem; font-weight: 800; color: var(--color-accent); letter-spacing: -.04em; line-height: 1; }
 .score-label { font-size: 1.4rem; font-weight: 600; color: var(--color-text-muted); }
 .score-note { font-size: .82rem; color: var(--color-text-muted); margin-top: .5rem; }
+.score-cap-notice {
+  margin-top: .75rem; padding: .55rem .9rem;
+  background: var(--color-poor-bg); color: var(--color-poor);
+  border-radius: var(--radius-sm); font-size: .82rem; font-weight: 500;
+}
 
 /* Weight controls */
 .weight-controls {

@@ -74,3 +74,5 @@ class ScoreResult:
     confidence: ConfidenceLevel
     confidence_notes: list[str]
     off_url: str
+    score_cap: int | None = None
+    score_cap_reasons: list[str] = field(default_factory=list)

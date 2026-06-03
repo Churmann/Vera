@@ -58,3 +58,49 @@ def test_off_url_preserved(engine, make_product):
     product = make_product(nutriscore_grade="C", nova_group=2)
     result = engine.score(product)
     assert result.off_url == product.raw_off_url
+
+
+# --- score cap ---
+
+def test_no_cap_for_decent_product(engine, make_product):
+    result = engine.score(make_product(nutriscore_grade="B", nova_group=2))
+    assert result.score_cap is None
+    assert result.score_cap_reasons == []
+
+
+def test_cap_fires_for_nova4(engine, make_product):
+    result = engine.score(make_product(nutriscore_grade="B", nova_group=4))
+    assert result.score_cap == 35
+    assert any("ultra-processed" in r for r in result.score_cap_reasons)
+
+
+def test_cap_fires_for_nutriscore_e(engine, make_product):
+    result = engine.score(make_product(nutriscore_grade="E", nova_group=2))
+    assert result.score_cap == 35
+    assert any("nutritionally poor" in r for r in result.score_cap_reasons)
+
+
+def test_cap_fires_for_both_triggers(engine, make_product):
+    """Coke profile: Nutri-Score E + NOVA 4 — both reasons should appear."""
+    result = engine.score(make_product(nutriscore_grade="E", nova_group=4))
+    assert result.score_cap == 35
+    assert len(result.score_cap_reasons) == 2
+
+
+def test_cap_value_is_applied_by_weighted_score():
+    """Weighted average would be 70 (B + no additives + NOVA 1) — no cap."""
+    from app.main import _weighted_score
+    from app.models import DimensionScore, EvidenceCard
+    dims = [
+        DimensionScore("nutrition", "N", 80, "x", 80, 0.5, "", [], []),
+        DimensionScore("additives", "A", 100, "x", 100, 0.3, "", [], []),
+        DimensionScore("nova", "P", 75, "x", 75, 0.2, "", [], []),
+    ]
+    assert _weighted_score(dims, None) == 85  # 80*0.5 + 100*0.3 + 75*0.2
+    assert _weighted_score(dims, 35) == 35
+
+
+def test_nutriscore_d_does_not_trigger_cap(engine, make_product):
+    """Nutri-Score D maps to score 40, above NUTRITION_CAP_THRESHOLD of 20 — no cap."""
+    result = engine.score(make_product(nutriscore_grade="D", nova_group=2))
+    assert result.score_cap is None

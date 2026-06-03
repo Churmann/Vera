@@ -85,7 +85,7 @@ def create_app() -> FastAPI:
         return templates.TemplateResponse(request, "product.html", {
             "product": product,
             "result": result,
-            "default_score": _weighted_score(result.dimensions),
+            "default_score": _weighted_score(result.dimensions, result.score_cap),
             "score_data_json": json.dumps(_serialise(result)),
             "default_weights": {
                 "nutrition": s.default_weight_nutrition,
@@ -97,8 +97,9 @@ def create_app() -> FastAPI:
     return app
 
 
-def _weighted_score(dims: list[DimensionScore]) -> int:
-    return round(sum(d.score * d.weight_default for d in dims))
+def _weighted_score(dims: list[DimensionScore], score_cap: int | None) -> int:
+    total = round(sum(d.score * d.weight_default for d in dims))
+    return min(total, score_cap) if score_cap is not None else total
 
 
 def _serialise(result: ScoreResult) -> dict:
@@ -124,6 +125,8 @@ def _serialise(result: ScoreResult) -> dict:
         ],
         "confidence": result.confidence.value,
         "confidence_notes": result.confidence_notes,
+        "score_cap": result.score_cap,
+        "score_cap_reasons": result.score_cap_reasons,
     }
 
 

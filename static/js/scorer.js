@@ -9,12 +9,14 @@
   var defaultWeights = JSON.parse(defaultWeightsEl.textContent);
 
   var dimensions = scoreData.dimensions;
+  var scoreCap = scoreData.score_cap !== undefined ? scoreData.score_cap : null;
   var weights = Object.assign({}, defaultWeights);
 
   function computeScore(w) {
-    return Math.round(dimensions.reduce(function (sum, d) {
+    var raw = Math.round(dimensions.reduce(function (sum, d) {
       return sum + d.score * (w[d.id] || 0);
     }, 0));
+    return (scoreCap !== null) ? Math.min(raw, scoreCap) : raw;
   }
 
   function scoreLabel(score) {
