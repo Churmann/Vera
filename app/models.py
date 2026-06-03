@@ -53,3 +53,24 @@ class EvidenceCard:
     evidence_summary: str
     dose_context: str
     source_url: str | None
+
+
+@dataclass
+class DimensionScore:
+    id: str
+    label: str
+    score: int            # 0–100
+    input_label: str      # e.g. "Nutri-Score C"
+    input_value: int      # e.g. 60 — shown as "Nutri-Score C → 60"
+    weight_default: float
+    summary: str
+    positives: list[str]
+    flags: list[EvidenceCard]
+
+
+@dataclass
+class ScoreResult:
+    dimensions: list[DimensionScore]
+    confidence: ConfidenceLevel
+    confidence_notes: list[str]
+    off_url: str

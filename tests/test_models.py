@@ -1,4 +1,4 @@
-from app.models import RiskLevel, ConfidenceLevel, OFFError, NormalisedProduct, AdditiveInfo, EvidenceCard
+from app.models import RiskLevel, ConfidenceLevel, OFFError, NormalisedProduct, AdditiveInfo, EvidenceCard, DimensionScore, ScoreResult
 
 
 def test_risk_level_values():
@@ -51,3 +51,24 @@ def test_evidence_card_stores_fields():
     )
     assert card.name == "Tartrazine"
     assert card.risk_level == RiskLevel.MODERATE
+
+
+def test_dimension_score_stores_fields():
+    dim = DimensionScore(
+        id="nutrition", label="Nutritional Quality",
+        score=80, input_label="Nutri-Score B", input_value=80,
+        weight_default=0.5, summary="Good nutritional profile.",
+        positives=["High in fibre"], flags=[],
+    )
+    assert dim.id == "nutrition"
+    assert dim.score == 80
+    assert dim.input_label == "Nutri-Score B"
+
+
+def test_score_result_stores_fields():
+    result = ScoreResult(
+        dimensions=[], confidence=ConfidenceLevel.HIGH,
+        confidence_notes=[], off_url="https://world.openfoodfacts.org/product/123/",
+    )
+    assert result.confidence == ConfidenceLevel.HIGH
+    assert result.dimensions == []
