@@ -37,7 +37,7 @@ class OFFClient:
             })
         except httpx.TimeoutException:
             raise OFFError("Request timed out", "timeout")
-        except httpx.NetworkError as e:
+        except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
             raise OFFError(str(e), "network_error")
 
         if resp.status_code == 429:
@@ -70,7 +70,7 @@ class OFFClient:
             )
         except httpx.TimeoutException:
             raise OFFError("Request timed out", "timeout")
-        except httpx.NetworkError as e:
+        except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
             raise OFFError(str(e), "network_error")
 
         if resp.status_code == 404:
