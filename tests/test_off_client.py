@@ -14,9 +14,9 @@ def settings():
 
 @respx.mock
 async def test_search_returns_summaries(settings):
-    respx.get("https://world.openfoodfacts.org/cgi/search.pl").mock(
+    respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(200, json={
-            "products": [{"code": "3017620422003", "product_name": "Nutella", "brands": "Ferrero", "image_url": None}]
+            "hits": [{"code": "3017620422003", "product_name": "Nutella", "brands": ["Ferrero"], "image_url": None}]
         })
     )
     client = OFFClient(settings)
@@ -25,15 +25,16 @@ async def test_search_returns_summaries(settings):
     assert len(results) == 1
     assert results[0].name == "Nutella"
     assert results[0].off_id == "3017620422003"
+    assert results[0].brand == "Ferrero"
 
 
 @respx.mock
 async def test_search_skips_entries_without_name(settings):
-    respx.get("https://world.openfoodfacts.org/cgi/search.pl").mock(
+    respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(200, json={
-            "products": [
+            "hits": [
                 {"code": "123", "product_name": ""},
-                {"code": "456", "product_name": "Good product", "brands": "Brand"},
+                {"code": "456", "product_name": "Good product", "brands": ["Brand"]},
             ]
         })
     )
@@ -46,7 +47,7 @@ async def test_search_skips_entries_without_name(settings):
 
 @respx.mock
 async def test_search_raises_on_timeout(settings):
-    respx.get("https://world.openfoodfacts.org/cgi/search.pl").mock(
+    respx.get("https://search.openfoodfacts.org/search").mock(
         side_effect=httpx.TimeoutException("timed out")
     )
     client = OFFClient(settings)
@@ -58,7 +59,7 @@ async def test_search_raises_on_timeout(settings):
 
 @respx.mock
 async def test_search_raises_on_429(settings):
-    respx.get("https://world.openfoodfacts.org/cgi/search.pl").mock(
+    respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(429)
     )
     client = OFFClient(settings)

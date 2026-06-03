@@ -27,9 +27,9 @@ def test_empty_search_shows_error():
 
 @respx.mock
 def test_search_returns_results():
-    respx.get("https://world.openfoodfacts.org/cgi/search.pl").mock(
+    respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(200, json={
-            "products": [{"code": "123", "product_name": "Nutella", "brands": "Ferrero", "image_url": None}]
+            "hits": [{"code": "123", "product_name": "Nutella", "brands": ["Ferrero"], "image_url": None}]
         })
     )
     with TestClient(app) as client:
@@ -40,7 +40,7 @@ def test_search_returns_results():
 
 @respx.mock
 def test_search_off_error_shows_error_page():
-    respx.get("https://world.openfoodfacts.org/cgi/search.pl").mock(
+    respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(429)
     )
     with TestClient(app) as client:

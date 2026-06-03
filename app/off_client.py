@@ -8,9 +8,11 @@ import truststore
 from app.config import Settings
 from app.models import NormalisedProduct, OFFError
 
-_SEARCH_URL = "https://world.openfoodfacts.org/cgi/search.pl"
+# /cgi/search.pl is permanently deprecated (503); full-text search moved to search-a-licious.
+_SEARCH_URL = "https://search.openfoodfacts.org/search"
+_SEARCH_FIELDS = "code,product_name,brands,image_url"
 _PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
-_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text"
+_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text"
 
 
 @dataclass
@@ -34,9 +36,9 @@ class OFFClient:
     async def search(self, query: str) -> list[ProductSummary]:
         try:
             resp = await self._client.get(_SEARCH_URL, params={
-                "search_terms": query, "search_simple": 1,
-                "action": "process", "json": 1,
-                "page_size": 10, "fields": _FIELDS,
+                "q": query,
+                "page_size": 10,
+                "fields": _SEARCH_FIELDS,
             })
         except httpx.TimeoutException:
             raise OFFError("Request timed out", "timeout")
@@ -50,15 +52,18 @@ class OFFClient:
         resp.raise_for_status()
 
         results = []
-        for p in resp.json().get("products", []):
-            code = p.get("code", "").strip()
-            name = p.get("product_name", "").strip()
+        for p in resp.json().get("hits", []):
+            code = (p.get("code") or "").strip()
+            name = (p.get("product_name") or "").strip()
             if not code or not name:
                 continue
+            # brands is a list in search-a-licious
+            brands_raw = p.get("brands") or []
+            brand = brands_raw[0].strip() if brands_raw else None
             results.append(ProductSummary(
                 off_id=code,
                 name=name,
-                brand=p.get("brands", "").strip() or None,
+                brand=brand or None,
                 image_url=p.get("image_url") or None,
             ))
         return results
@@ -71,7 +76,7 @@ class OFFClient:
         try:
             resp = await self._client.get(
                 _PRODUCT_URL.format(code=off_id),
-                params={"fields": _FIELDS},
+                params={"fields": _PRODUCT_FIELDS},
             )
         except httpx.TimeoutException:
             raise OFFError("Request timed out", "timeout")
