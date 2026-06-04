@@ -276,3 +276,341 @@ e551:
   evidence_summary: "Silicon dioxide (E 551) is an anti-caking agent (synthetic amorphous silica). EFSA's 2018 re-evaluation found no evidence of toxicity at reported uses but could not confirm a numerical ADI because of gaps in the data, particularly on the nanoparticle fraction of the material."
   dose_context: "EFSA recommended that EU specifications be revised to characterise particle size and nano-scale content. There was no demonstrated harm at dietary exposure, but EFSA flagged uncertainty pending better nanomaterial data; a 2024 follow-up addressed infant foods."
   source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5088"
+
+e100:
+  name: "Curcumin"
+  risk_level: "low"
+  evidence_summary: "Curcumin (E 100) is the yellow-orange pigment from turmeric. EFSA re-evaluated it in 2010 and confirmed an ADI of 3 mg/kg bw/day; it is not genotoxic and showed no carcinogenicity in animal studies."
+  dose_context: "EFSA found that high-level intake estimates for some young children could exceed the ADI in certain countries, while adult exposure is generally below it. The pigment is poorly absorbed."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1679"
+
+e104:
+  name: "Quinoline Yellow"
+  risk_level: "moderate"
+  evidence_summary: "Quinoline Yellow (E 104) is a synthetic colour and one of the 'Southampton Six' dyes linked to increased hyperactivity in some children in the McCann 2007 study. EU law requires the warning 'may have an adverse effect on activity and attention in children.' EFSA's 2009 re-evaluation lowered the ADI to 0.5 mg/kg bw/day."
+  dose_context: "EFSA noted intake at maximum use levels could exceed the ADI, especially for children. The behavioural effect was seen with mixtures of colours plus a preservative, not this dye alone."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1329"
+
+e120:
+  name: "Cochineal, carminic acid, carmines"
+  risk_level: "low"
+  evidence_summary: "Cochineal, carminic acid and carmines (E 120) are red colours derived from the cochineal insect. EFSA re-evaluated them in 2015 and maintained the ADI of 5 mg/kg bw/day, with no genotoxicity concern. As a protein-containing natural extract, it can rarely trigger allergic reactions in sensitive people."
+  dose_context: "Exposure is generally below the ADI. EFSA recommended tightening specifications for residual protein and toxic-element impurities."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4288"
+
+e122:
+  name: "Azorubine / Carmoisine"
+  risk_level: "moderate"
+  evidence_summary: "Azorubine/Carmoisine (E 122) is a synthetic azo dye and one of the 'Southampton Six' associated with hyperactivity in some children (McCann 2007). EU law requires the warning 'may have an adverse effect on activity and attention in children.' EFSA's 2009 re-evaluation maintained the ADI of 4 mg/kg bw/day."
+  dose_context: "At the 95th percentile, intake for 1-10 year-old children could exceed the ADI under some scenarios. The behavioural effect was observed with colour mixtures, not this dye alone."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1332"
+
+e124:
+  name: "Ponceau 4R"
+  risk_level: "moderate"
+  evidence_summary: "Ponceau 4R (E 124) is a synthetic azo dye, one of the 'Southampton Six' linked to hyperactivity in some children (McCann 2007). EU law requires the warning 'may have an adverse effect on activity and attention in children.' EFSA's 2009 re-evaluation lowered the ADI to 0.7 mg/kg bw/day."
+  dose_context: "EFSA found intake estimates could exceed the ADI for children at maximum use levels. The behavioural signal came from mixtures of additives."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1328"
+
+e131:
+  name: "Patent Blue V"
+  risk_level: "low"
+  evidence_summary: "Patent Blue V (E 131) is a synthetic triarylmethane colour. EFSA's 2013 re-evaluation concluded it is not a safety concern at current use levels and is not genotoxic. Rare hypersensitivity (allergic-type) reactions have been reported."
+  dose_context: "EFSA did not identify a concern at reported uses. It is poorly absorbed from the gut."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2818"
+
+e132:
+  name: "Indigotine / Indigo Carmine"
+  risk_level: "low"
+  evidence_summary: "Indigotine / Indigo Carmine (E 132) is a synthetic blue colour. EFSA re-evaluated it in 2014 and confirmed the ADI of 5 mg/kg bw/day; it is poorly absorbed and raised no genotoxicity concern."
+  dose_context: "Exposure estimates were below the ADI for all population groups."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/3768"
+
+e133:
+  name: "Brilliant Blue FCF"
+  risk_level: "low"
+  evidence_summary: "Brilliant Blue FCF (E 133) is a synthetic blue colour. EFSA's 2010 re-evaluation established an ADI of 6 mg/kg bw/day and found no genotoxicity or carcinogenicity concern."
+  dose_context: "Exposure estimates were generally below the ADI. It is poorly absorbed."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1853"
+
+e150b:
+  name: "Caustic sulphite caramel (Class II)"
+  risk_level: "low"
+  evidence_summary: "Caramel colours (E 150a-d) are made by controlled heating of carbohydrates. EFSA (2011) set a group ADI of 300 mg/kg bw/day. Caustic sulphite caramel (Class II, E 150b) is made with sulphite but without ammonia compounds."
+  dose_context: "EFSA's refined assessment found exposure generally within the group ADI. Class II does not carry the ammonia-process by-products of Classes III and IV."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2004"
+
+e150c:
+  name: "Ammonia caramel (Class III)"
+  risk_level: "moderate"
+  evidence_summary: "Ammonia caramel (Class III, E 150c) is made with ammonia compounds and can contain the by-product 4-methylimidazole (4-MEI), which IARC classifies as possibly carcinogenic (Group 2B). EFSA (2011) set a group ADI of 300 mg/kg bw/day for caramel colours, with a specific limit (THI) for this class."
+  dose_context: "EFSA concluded exposure is generally within the group ADI. The by-product concern is based on high-dose rodent studies; dietary exposure is far lower."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2004"
+
+e160b:
+  name: "Annatto (bixin, norbixin)"
+  risk_level: "low"
+  evidence_summary: "Annatto (E 160b) is an orange-red colour from the seeds of Bixa orellana; its pigments are bixin and norbixin. EFSA's 2016 opinion set ADIs of 6 mg bixin/kg and 0.3 mg norbixin/kg bw/day."
+  dose_context: "Bixin exposure was below the ADI for all groups; norbixin could exceed it at the 95th percentile only under proposed extended uses."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4544"
+
+e162:
+  name: "Beetroot red (betalains)"
+  risk_level: "low"
+  evidence_summary: "Beetroot red (E 162) is a natural colour from beetroot, consisting mainly of betalain pigments. EFSA's 2015 re-evaluation could not set a numerical ADI because the toxicological database was limited, but did not identify a safety concern at the reported uses."
+  dose_context: "As a normal food-derived pigment with low bioavailability, EFSA considered current dietary exposure not to be of concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4318"
+
+e170:
+  name: "Calcium carbonate"
+  risk_level: "low"
+  evidence_summary: "Calcium carbonate (E 170) is a white colour, anti-caking agent and acidity regulator that is also a common calcium source. EFSA's 2011 re-evaluation raised no safety concern at its uses as a food additive."
+  dose_context: "EFSA did not consider a numerical ADI necessary. Additive use adds to total calcium intake; concerns about very high calcium apply to supplements, not additive levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2318"
+
+e171:
+  name: "Titanium dioxide"
+  risk_level: "high"
+  evidence_summary: "Titanium dioxide (E 171) is a white colour. In 2021 EFSA concluded it can no longer be considered safe as a food additive because a concern for genotoxicity could not be ruled out, partly due to the nanoparticle fraction. The EU banned its use as a food additive from 2022."
+  dose_context: "EFSA could not establish a safe level (no ADI). The concern is potential accumulation and genotoxicity rather than acute toxicity."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6585"
+
+e172:
+  name: "Iron oxides and hydroxides"
+  risk_level: "low"
+  evidence_summary: "Iron oxides and hydroxides (E 172) are yellow, red, brown and black mineral colours. EFSA's 2015 re-evaluation found them poorly absorbed and did not identify a safety concern at the reported uses, though data gaps prevented a numerical ADI."
+  dose_context: "EFSA estimated exposure to be low and recommended updated specifications for soluble iron and toxic-element impurities."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4317"
+
+e210:
+  name: "Benzoic acid"
+  risk_level: "moderate"
+  evidence_summary: "Benzoic acid and benzoates (E 210-213) are preservatives. EFSA's 2016 re-evaluation maintained a group ADI of 5 mg/kg bw/day. Benzoates can trigger non-allergic hypersensitivity in some sensitive individuals, and benzoic acid can form trace benzene if combined with vitamin C under certain conditions."
+  dose_context: "EFSA found exposure could exceed the ADI for high-consuming children at the upper estimates. The benzene-formation issue is a manufacturing-control matter."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4433"
+
+e235:
+  name: "Natamycin"
+  risk_level: "low"
+  evidence_summary: "Natamycin (E 235) is an antifungal preservative used only for surface treatment of cheese and dried sausages. EFSA's 2009 opinion concluded its use is not a safety concern and that the risk of promoting antimicrobial resistance is low at authorised uses."
+  dose_context: "Exposure is limited because it is applied only to food surfaces and largely removed with the rind. ADI 0.3 mg/kg bw/day."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/1412"
+
+e249:
+  name: "Potassium nitrite"
+  risk_level: "high"
+  evidence_summary: "Potassium nitrite (E 249) is a curing preservative, assessed by EFSA together with sodium nitrite (E 250) in 2017. Nitrites can react with amines to form nitrosamines, some of which are carcinogenic; consumption of nitrite-cured processed meat is classified by IARC as Group 1 (carcinogenic to humans)."
+  dose_context: "ADI for nitrite is 0.07 mg/kg bw/day. The cancer risk is linked to overall processed-meat intake rather than nitrite dose alone."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4786"
+
+e251:
+  name: "Sodium nitrate"
+  risk_level: "moderate"
+  evidence_summary: "Sodium nitrate (E 251) is a curing preservative re-evaluated by EFSA in 2017 (with potassium nitrate E 252). Nitrate itself is of low toxicity, but part of it is converted to nitrite in the body, which can form nitrosamines. EFSA confirmed an ADI of 3.7 mg nitrate/kg bw/day."
+  dose_context: "Most dietary nitrate comes from vegetables and water rather than additives. The concern relates to endogenous conversion to nitrite."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4787"
+
+e260:
+  name: "Acetic acid"
+  risk_level: "low"
+  evidence_summary: "Acetic acid (E 260) is the acid in vinegar, used as an acidity regulator and preservative, and a normal product of metabolism. It is widely regarded as low concern."
+  dose_context: "Acetic acid and its salts (E 260-263) are normal dietary components. As a food acid, frequent exposure can contribute to dental enamel erosion."
+  source_url: ""
+  note: "SOURCE NEEDED — the 2020 EFSA opinion pub/6032 covers the E 472a-f ESTERS, not free acetic acid (E 260). The re-evaluation of free acetic acid / acetates (E 260-263) appears still ongoing; no completed EFSA opinion URL confirmed."
+
+e280:
+  name: "Propionic acid"
+  risk_level: "low"
+  evidence_summary: "Propionic acid and propionates (E 280-283) are preservatives used mainly against mould in bread and baked goods; propionate is also a normal product of gut fermentation and metabolism. EFSA's 2014 re-evaluation raised no genotoxicity or other safety concern."
+  dose_context: "EFSA did not consider a numerical ADI necessary. Intake from additive use is small relative to propionate produced naturally in the gut."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/3779"
+
+e310:
+  name: "Propyl gallate"
+  risk_level: "low"
+  evidence_summary: "Propyl gallate (E 310) is an antioxidant used to stop fats and oils going rancid. EFSA's 2014 re-evaluation set an ADI of 0.5 mg/kg bw/day and found no genotoxicity concern at that level."
+  dose_context: "EFSA estimated exposure to be below the ADI for most consumers. The former group ADI shared with octyl and dodecyl gallate was withdrawn in favour of substance-specific values."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/3642"
+
+e334:
+  name: "Tartaric acid (L(+)-)"
+  risk_level: "low"
+  evidence_summary: "L(+)-Tartaric acid (E 334) is an acidity regulator and antioxidant synergist that occurs naturally in grapes. EFSA's 2020 re-evaluation (with the tartrates E 335-337, E 354) raised no safety concern at the reported uses."
+  dose_context: "EFSA found exposure not to be of concern. Tartaric acid is poorly absorbed and largely excreted unchanged or metabolised by gut bacteria."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6030"
+
+e385:
+  name: "Calcium disodium EDTA"
+  risk_level: "low"
+  evidence_summary: "Calcium disodium EDTA (E 385) is a sequestrant that binds metal ions to protect colour and flavour, used in some canned foods, sauces and dressings."
+  dose_context: "EDTA can bind dietary minerals; EU rules restrict its use to specific foods at low levels."
+  source_url: ""
+  note: "SOURCE NEEDED — EFSA's re-evaluation of E 385 is still in progress; a call for data was issued with a deadline in December 2024 and no completed EFSA opinion has been confirmed."
+
+e392:
+  name: "Extracts of rosemary"
+  risk_level: "low"
+  evidence_summary: "Extracts of rosemary (E 392) are natural antioxidants used to protect fats and oils from oxidation. They were evaluated as safe when authorised in the EU, and EFSA's 2018 refined exposure assessment found dietary intakes to be within acceptable levels."
+  dose_context: "Exposure estimates were below levels of concern across population groups."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5373"
+
+e400:
+  name: "Alginic acid and alginates"
+  risk_level: "low"
+  evidence_summary: "Alginic acid and its salts (E 400-404) are gelling and thickening agents extracted from brown seaweed. EFSA's 2017 re-evaluation found no need for a numerical ADI and no safety concern at the reported uses; they are not significantly absorbed."
+  dose_context: "EFSA advised that intake by infants and young children should stay below therapeutic doses at which alginates can affect mineral absorption or cause mild gut effects."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5049"
+
+e405:
+  name: "Propylene glycol alginate"
+  risk_level: "low"
+  evidence_summary: "Propylene glycol alginate (E 405) is a modified alginate used as a thickener and stabiliser (e.g. in some drinks and dressings). EFSA's 2018 re-evaluation set an ADI of 70 mg/kg bw/day and found no safety concern at the reported uses."
+  dose_context: "Exposure estimates were generally below the ADI."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5371"
+
+e406:
+  name: "Agar"
+  risk_level: "low"
+  evidence_summary: "Agar (E 406) is a gelling polysaccharide from red seaweed. EFSA's 2016 re-evaluation found no need for a numerical ADI and no safety concern; it is not significantly digested and acts as fibre."
+  dose_context: "No adverse effects at dietary levels. Like other gel-forming fibres, very high intakes can have a laxative effect."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4645"
+
+e410:
+  name: "Locust bean gum (carob gum)"
+  risk_level: "low"
+  evidence_summary: "Locust bean (carob) gum (E 410) is a thickener from carob seeds. EFSA's 2017 re-evaluation found no genotoxicity or other safety concern for the general population and concluded a numerical ADI was not needed."
+  dose_context: "A 2023 follow-up flagged insufficient data specifically for foods for infants and young children. High intakes can cause mild gut effects as with other soluble fibres."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4646"
+
+e414:
+  name: "Acacia gum (gum arabic)"
+  risk_level: "low"
+  evidence_summary: "Acacia gum (gum arabic, E 414) is a thickener and stabiliser from Acacia trees. EFSA's 2017 re-evaluation found no safety concern and concluded a numerical ADI was not needed; it behaves largely as fermentable fibre."
+  dose_context: "No adverse effects at dietary levels. A 2019 follow-up addressed use in foods for infants below 16 weeks of age."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4741"
+
+e417:
+  name: "Tara gum"
+  risk_level: "low"
+  evidence_summary: "Tara gum (E 417) is a thickener from the seeds of the tara tree. EFSA's 2017 re-evaluation found no safety concern at the reported uses and concluded a numerical ADI was not needed."
+  dose_context: "It is poorly digested and acts as fibre; no adverse effects at dietary levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4863"
+
+e420:
+  name: "Sorbitol"
+  risk_level: "low"
+  evidence_summary: "Sorbitol (E 420) is a sugar alcohol (polyol) used as a sweetener and humectant; like other polyols it is incompletely absorbed."
+  dose_context: "Polyols can cause bloating, wind and a laxative effect in large amounts; EU labels carry a warning to that effect."
+  source_url: ""
+  note: "SOURCE NEEDED — sorbitol (E 420) is part of EFSA's ongoing re-evaluation of sweeteners (a call for genotoxicity data closed in early 2024); no completed EFSA opinion URL confirmed."
+
+e421:
+  name: "Mannitol"
+  risk_level: "low"
+  evidence_summary: "Mannitol (E 421) is a sugar alcohol (polyol) used as a sweetener and anti-caking agent; it is incompletely absorbed."
+  dose_context: "As with other polyols, excessive intake can have a laxative effect; EU labels carry a warning."
+  source_url: ""
+  note: "SOURCE NEEDED — mannitol (E 421) is part of EFSA's ongoing re-evaluation of sweeteners; no completed EFSA opinion URL confirmed."
+
+e473:
+  name: "Sucrose esters of fatty acids"
+  risk_level: "low"
+  evidence_summary: "Sucrose esters of fatty acids (E 473) are emulsifiers made from sucrose and fatty acids. EFSA has assessed them with a group ADI of 40 mg/kg bw/day (shared with sucroglycerides E 474); its 2023 opinion followed up earlier evaluations and addressed use in foods for infants."
+  dose_context: "Exposure can approach the ADI for high consumers; the components are digested like ordinary fats and sugars."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/7961"
+
+e476:
+  name: "Polyglycerol polyricinoleate (PGPR)"
+  risk_level: "low"
+  evidence_summary: "Polyglycerol polyricinoleate (PGPR, E 476) is an emulsifier used mainly in chocolate to control flow. EFSA's 2017 re-evaluation found no genotoxicity or other safety concern and set an ADI of 25 mg/kg bw/day."
+  dose_context: "Exposure estimates were below the ADI. PGPR is hydrolysed and metabolised like other fats."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4743"
+
+e481:
+  name: "Sodium stearoyl-2-lactylate"
+  risk_level: "low"
+  evidence_summary: "Sodium stearoyl-2-lactylate (E 481) and calcium stearoyl-2-lactylate (E 482) are emulsifiers used in baked goods. EFSA's 2013 re-evaluation found no genotoxicity or other safety concern; an ADI of 20 mg/kg bw/day applies."
+  dose_context: "Exposure estimates were within the ADI. The components are digested like ordinary fats and lactic acid."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/3144"
+
+e508:
+  name: "Potassium chloride"
+  risk_level: "low"
+  evidence_summary: "Potassium chloride (E 508) is a seasoning, gelling aid and salt substitute, assessed by EFSA in 2019 with the other chlorides (E 507-511). EFSA found low acute toxicity and no concern for genotoxicity or carcinogenicity."
+  dose_context: "It is widely used to reduce sodium. Very high single doses can affect people with impaired kidney function or on certain medications, but normal food use is not a concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5751"
+
+e553b:
+  name: "Talc"
+  risk_level: "low"
+  evidence_summary: "Talc (E 553b) is an anti-caking agent (a magnesium silicate mineral). EFSA's 2018 re-evaluation found it very poorly absorbed with no indication of genotoxicity or developmental toxicity; the food additive is asbestos-free by specification."
+  dose_context: "EFSA did not set a numerical ADI but found no safety concern at the low levels used in food."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5375"
+
+e575:
+  name: "Glucono-delta-lactone"
+  risk_level: "low"
+  evidence_summary: "Glucono-delta-lactone (E 575) is an acidity regulator and raising-agent acid that converts to gluconic acid in water; gluconic acid is a normal metabolite. It is used, for example, in baking powders and some meat and tofu products."
+  dose_context: "It is widely regarded as low concern at the levels used in food."
+  source_url: ""
+  note: "SOURCE NEEDED — EFSA's re-evaluation of gluconic acid (E 574) and related additives (E 575-579) is still in progress (call for data); no completed EFSA opinion URL confirmed."
+
+e627:
+  name: "Disodium guanylate"
+  risk_level: "low"
+  evidence_summary: "Disodium guanylate (E 627) is a ribonucleotide flavour enhancer, usually used together with glutamate (E 621) to boost savoury (umami) taste."
+  dose_context: "It is used at low levels and metabolised like other dietary nucleotides; purine content is a consideration only for people specifically advised to limit purine intake."
+  source_url: ""
+  note: "SOURCE NEEDED — EFSA's re-evaluation of ribonucleotides (E 626-635) is still in progress (call for data); no completed EFSA opinion URL confirmed."
+
+e631:
+  name: "Disodium inosinate"
+  risk_level: "low"
+  evidence_summary: "Disodium inosinate (E 631) is a ribonucleotide flavour enhancer, typically combined with glutamate (E 621) to intensify savoury taste."
+  dose_context: "Used at low levels and metabolised like other dietary nucleotides; relevant to purine intake only for people specifically advised to limit it."
+  source_url: ""
+  note: "SOURCE NEEDED — EFSA's re-evaluation of ribonucleotides (E 626-635) is still in progress (call for data); no completed EFSA opinion URL confirmed."
+
+e901:
+  name: "Beeswax"
+  risk_level: "low"
+  evidence_summary: "Beeswax (E 901) is a glazing agent used to coat confectionery and as a carrier for flavours. EFSA's 2007 opinion concluded its use as a food additive is not a safety concern."
+  dose_context: "Beeswax is poorly absorbed and used in small amounts as a surface coating."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/615"
+
+e903:
+  name: "Carnauba wax"
+  risk_level: "low"
+  evidence_summary: "Carnauba wax (E 903) is a glazing agent from a palm leaf, used to coat sweets, chewing gum and some supplements. EFSA's 2012 re-evaluation set an ADI of 7 mg/kg bw/day and found no safety concern at the reported uses."
+  dose_context: "Exposure estimates were below the ADI. It is poorly absorbed and used only as a thin surface coating."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2880"
+
+e904:
+  name: "Shellac"
+  risk_level: "low"
+  evidence_summary: "Shellac (E 904) is a glazing agent (a resin from the lac insect) used to coat confectionery, fruit and supplements. EFSA's 2024 re-evaluation derived an ADI of 4 mg/kg bw/day for wax-free shellac and found no safety concern at the reported uses."
+  dose_context: "Exposure is limited as it is used only as a surface coating."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/8897"
+
+e965:
+  name: "Maltitol"
+  risk_level: "low"
+  evidence_summary: "Maltitol (E 965) is a sugar alcohol (polyol) used as a bulk sweetener; it is partially absorbed and partially fermented in the gut."
+  dose_context: "As with other polyols, excess intake can cause bloating and a laxative effect; EU labels carry a warning."
+  source_url: ""
+  note: "SOURCE NEEDED — maltitol (E 965) is part of EFSA's ongoing re-evaluation of sweeteners (call for data); no completed EFSA opinion URL confirmed."
+
+e967:
+  name: "Xylitol"
+  risk_level: "low"
+  evidence_summary: "Xylitol (E 967) is a sugar alcohol (polyol) used as a sweetener, notable for not promoting tooth decay; it is incompletely absorbed."
+  dose_context: "Excess intake can have a laxative effect; EU labels carry a warning. (Xylitol is toxic to dogs, though that is not a human-safety issue.)"
+  source_url: ""
+  note: "SOURCE NEEDED — xylitol (E 967) is part of EFSA's ongoing re-evaluation of sweeteners; no completed EFSA opinion URL confirmed."
+
+e968:
+  name: "Erythritol"
+  risk_level: "low"
+  evidence_summary: "Erythritol (E 968) is a sugar alcohol (polyol) produced by fermentation. EFSA's 2023 re-evaluation found no genotoxicity or other systemic safety concern, identifying gut tolerance (diarrhoea) at high intakes as the main effect."
+  dose_context: "EFSA identified a NOAEL for diarrhoea of about 0.5 g/kg bw. Unlike most polyols it is largely absorbed and excreted unchanged in urine. (Some 2023 observational research has raised questions about cardiovascular markers; this was not part of EFSA's additive assessment.)"
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/8430"
