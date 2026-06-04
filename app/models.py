@@ -30,6 +30,9 @@ class AdditiveInfo:
     evidence_summary: str = ""
     dose_context: str = ""
     source_url: str | None = None
+    # Optional honest status shown in place of evidence when there is no
+    # verified source_url (e.g. "EFSA re-evaluation in progress").
+    pending_note: str | None = None
 
 
 @dataclass

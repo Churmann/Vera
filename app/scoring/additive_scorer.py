@@ -13,7 +13,16 @@ class AdditiveScorer:
         cards: list[EvidenceCard] = []
         for e_num in product.additives:
             info = self._db.get(e_num)
-            if info:
+            if info is None:
+                cards.append(EvidenceCard(
+                    name=e_num.upper(),
+                    e_number=e_num,
+                    risk_level=RiskLevel.UNKNOWN,
+                    evidence_summary="This additive is not in our database.",
+                    dose_context="",
+                    source_url=None,
+                ))
+            elif info.source_url:
                 cards.append(EvidenceCard(
                     name=info.name,
                     e_number=e_num,
@@ -23,11 +32,14 @@ class AdditiveScorer:
                     source_url=info.source_url,
                 ))
             else:
+                # Known additive but no verified source: never present an
+                # evidence narrative as if it were sourced. Fall back to the
+                # honest "no detailed evidence" state, optionally noting status.
                 cards.append(EvidenceCard(
-                    name=e_num.upper(),
+                    name=info.name,
                     e_number=e_num,
-                    risk_level=RiskLevel.UNKNOWN,
-                    evidence_summary="This additive is not in our database.",
+                    risk_level=info.risk_level,
+                    evidence_summary=info.pending_note or "No detailed evidence summary available.",
                     dose_context="",
                     source_url=None,
                 ))

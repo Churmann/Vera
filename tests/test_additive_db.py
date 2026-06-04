@@ -55,6 +55,25 @@ def test_lookup_is_case_insensitive(db_files):
     assert db.get("E330").name == "Citric acid"
 
 
+def test_loads_pending_note(tmp_path):
+    curated = {
+        "e296": {
+            "name": "Malic acid",
+            "risk_level": "low",
+            "source_url": "",
+            "pending_note": "EFSA re-evaluation in progress (2024 call for data).",
+        }
+    }
+    t = tmp_path / "taxonomy.json"
+    c = tmp_path / "curated.yaml"
+    t.write_text("[]")
+    c.write_text(yaml.dump(curated))
+    db = AdditiveDB(t, c)
+    info = db.get("e296")
+    assert info.pending_note == "EFSA re-evaluation in progress (2024 call for data)."
+    assert not info.source_url
+
+
 def test_empty_curated_file(tmp_path):
     t = tmp_path / "taxonomy.json"
     c = tmp_path / "curated.yaml"

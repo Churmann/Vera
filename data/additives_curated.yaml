@@ -137,3 +137,142 @@ e960:
   evidence_summary: "Steviol glycosides are natural sweeteners extracted from the Stevia rebaudiana plant. EFSA and FDA/GRAS consider them safe. They are not metabolised by human enzymes and are excreted unchanged."
   dose_context: "ADI: 4 mg/kg bw/day as steviol equivalents (EFSA 2015). Typical dietary exposure is well within this. No adverse effects observed in studies up to the ADI."
   source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4146"
+
+e101:
+  name: "Riboflavin (Vitamin B2)"
+  risk_level: "low"
+  evidence_summary: "Riboflavin (E 101) is vitamin B2, an essential nutrient used as a yellow-orange colour. EFSA re-evaluated it in 2013 and found no safety concern from its use as a food additive; it is not genotoxic, and any excess is excreted in urine."
+  dose_context: "Exposure from use as a colour is small relative to normal dietary and supplemental intake of the vitamin. EFSA did not consider a numerical ADI necessary."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/3357"
+
+e150a:
+  name: "Plain caramel (Class I)"
+  risk_level: "low"
+  evidence_summary: "Caramel colours (E 150a-d) are made by controlled heating of carbohydrates. EFSA re-evaluated all four classes in 2011 and set a group ADI of 300 mg/kg bw/day. Plain caramel (Class I), made without ammonia or sulphite reagents, is the simplest form and raised the least concern."
+  dose_context: "EFSA's 2012 refined assessment found consumer exposure well below the group ADI for most people. Class I carries none of the by-product concerns associated with the ammonia-process caramels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2004"
+
+e150d:
+  name: "Sulphite ammonia caramel (Class IV)"
+  risk_level: "moderate"
+  evidence_summary: "Class IV caramel, the colour used in many cola drinks, is made with ammonium and sulphite compounds and can contain 4-methylimidazole (4-MEI), a process by-product that IARC classifies as possibly carcinogenic (Group 2B). EFSA (2011) set a group ADI of 300 mg/kg bw/day for caramel colours together with limits on by-products."
+  dose_context: "EFSA concluded that exposure to caramel colours, including the 4-MEI content, is generally within the group ADI. The 4-MEI carcinogenicity signal comes from high-dose rodent studies; dietary exposure is far lower."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/2004"
+
+e160c:
+  name: "Paprika extract (paprika oleoresin)"
+  risk_level: "low"
+  evidence_summary: "Paprika extract (E 160c) is a red-orange colour obtained from sweet peppers (Capsicum annuum); its main pigments are capsanthin and capsorubin. EFSA re-evaluated it in 2015 and concluded the extract used as a colour does not raise a genotoxicity concern; pigment bioavailability is very low."
+  dose_context: "EFSA could not derive a numerical ADI because of limitations in the older toxicity database, but did not identify a safety concern at reported use levels as a food colour."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4320"
+
+e202:
+  name: "Potassium sorbate"
+  risk_level: "low"
+  evidence_summary: "Potassium sorbate (E 202) is the potassium salt of sorbic acid, a widely used preservative against moulds and yeasts. EFSA's 2015 re-evaluation found no evidence of genotoxicity or carcinogenicity and set a group ADI of 11 mg/kg bw/day (expressed as sorbic acid) covering E 200 and E 202."
+  dose_context: "EFSA noted that intake could exceed the ADI at the upper end of estimates for high consumers, especially children, prompting a follow-up review. For typical consumers, exposure is within the ADI."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4144"
+
+e270:
+  name: "Lactic acid"
+  risk_level: "low"
+  evidence_summary: "Lactic acid (E 270) is an acidity regulator that occurs naturally in fermented foods and in the body as a normal product of metabolism. It is widely regarded as low concern."
+  dose_context: "Lactic acid is not used in foods for young infants because they metabolise the D-isomer poorly — a formulation consideration, not a general toxicity concern."
+  source_url: ""
+  note: "SOURCE NEEDED — the 2020 EFSA opinion pub/6032 covers the E 472a-f ESTERS (E 472b is the lactic acid ester), NOT free lactic acid (E 270). No standalone EFSA food-additive re-evaluation of free lactic acid / lactates (E 325-327) could be confirmed; the organic-acids re-evaluation appears not yet completed."
+
+e296:
+  name: "Malic acid"
+  risk_level: "low"
+  evidence_summary: "Malic acid (E 296) is an acidity regulator and flavour acid that occurs naturally in fruit (notably apples) and in the body's energy metabolism. It has a long history of use and is generally regarded as low concern."
+  dose_context: "EFSA opened a re-evaluation of malic acid and malates (E 296, E 350-352) and issued a call for data; a completed EFSA food-additive opinion was not available at the time of writing, so this summary reflects general background rather than a specific re-evaluation."
+  source_url: ""
+  pending_note: "EFSA's re-evaluation of malic acid and malates (E 296, E 350-352) is currently in progress — a public call for data was issued in 2024 and no completed opinion has been published yet. We will add a sourced summary once it is available."
+  note: "SOURCE NEEDED — EFSA re-evaluation of E 296 still in progress (call for data only); no final EFSA opinion URL confirmed."
+
+e300:
+  name: "Ascorbic acid (Vitamin C)"
+  risk_level: "low"
+  evidence_summary: "Ascorbic acid (E 300) is vitamin C, used as an antioxidant. EFSA re-evaluated it (with sodium and calcium ascorbate) in 2015 and found no safety concern from its use as a food additive."
+  dose_context: "EFSA considered a numerical ADI unnecessary. Additive use adds little to total intake compared with dietary and supplemental vitamin C. Very high supplemental doses (grams per day) can cause gastrointestinal upset, but not at additive levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4087"
+
+e306:
+  name: "Tocopherol-rich extract (Vitamin E)"
+  risk_level: "low"
+  evidence_summary: "Tocopherol-rich extract (E 306) and the related tocopherols (E 307-309) are forms of vitamin E used as antioxidants to stop fats turning rancid. EFSA re-evaluated them in 2015 and did not identify a safety concern at their uses as food additives, with no genotoxicity concern."
+  dose_context: "Additive use contributes modestly to overall vitamin E intake. EFSA did not consider a numerical ADI necessary at these use levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4247"
+
+e322:
+  name: "Lecithins"
+  risk_level: "low"
+  evidence_summary: "Lecithins (E 322) are natural phospholipid emulsifiers, usually extracted from soya or sunflower. EFSA re-evaluated them in 2017 and concluded there is no safety concern at current uses; lecithins are normal dietary components digested like other fats."
+  dose_context: "EFSA considered a numerical ADI unnecessary for the general population. A separate 2020 opinion specifically addressed use in foods for infants below 16 weeks of age."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4742"
+
+e330:
+  name: "Citric acid"
+  risk_level: "low"
+  evidence_summary: "Citric acid (E 330) is among the most common acidity regulators, occurring naturally in citrus fruit and central to the body's energy (Krebs) cycle. It is widely regarded as low concern."
+  dose_context: "Like other food acids, frequent exposure can contribute to dental enamel erosion — a local effect, not systemic toxicity."
+  source_url: ""
+  note: "SOURCE NEEDED — the 2020 EFSA opinion pub/6032 covers the E 472a-f ESTERS (E 472c is the citric acid ester), NOT free citric acid (E 330). No standalone EFSA food-additive re-evaluation of free citric acid / citrates (E 330-333) could be confirmed; the organic-acids re-evaluation appears not yet completed."
+
+e331:
+  name: "Sodium citrates"
+  risk_level: "low"
+  evidence_summary: "Sodium citrates (E 331) are the sodium salts of citric acid, used as acidity regulators, emulsifying salts and sequestrants. As salts of a normal metabolite they are generally regarded as low concern, similar to citric acid itself (E 330)."
+  dose_context: "A completed standalone EFSA re-evaluation opinion for E 331 could not be confirmed at the time of writing. The closest confirmed EFSA opinion is the 2020 re-evaluation of citric acid (E 330)."
+  source_url: ""
+  note: "SOURCE NEEDED — could not confirm a dedicated EFSA re-evaluation opinion specifically for sodium citrates (E 331). Verify whether E 331 is covered within the citric acid opinion or a separate one."
+
+e412:
+  name: "Guar gum"
+  risk_level: "low"
+  evidence_summary: "Guar gum (E 412) is a thickener from the endosperm of the guar bean. EFSA's 2017 re-evaluation found no genotoxicity or other safety concern for the general population; it is largely undigested and acts as fermentable fibre."
+  dose_context: "EFSA concluded a numerical ADI was not needed. High intakes can cause bloating and laxative effects, as with other soluble fibres. A 2024 follow-up flagged insufficient data specifically for foods for infants and young children."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4669"
+
+e422:
+  name: "Glycerol (glycerine)"
+  risk_level: "low"
+  evidence_summary: "Glycerol (E 422) is a humectant and bulk sweetener that is also a normal building block of dietary fats. EFSA's 2017 re-evaluation found no concern for genotoxicity or carcinogenicity and no safety concern at its uses as a food additive."
+  dose_context: "EFSA considered a numerical ADI unnecessary. Very large single doses can have a mild osmotic/laxative effect, but not at typical food-additive levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4720"
+
+e450:
+  name: "Diphosphates"
+  risk_level: "moderate"
+  evidence_summary: "Diphosphates (E 450) are phosphate additives used as raising agents, emulsifying salts and stabilisers. In 2019 EFSA set, for the first time, a group ADI for phosphates of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that dietary exposure to phosphates may exceed the group ADI for infants, toddlers and children, and for high consumers generally. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e466:
+  name: "Carboxymethylcellulose (cellulose gum)"
+  risk_level: "low"
+  evidence_summary: "Sodium carboxymethylcellulose (E 466), or cellulose gum, is a thickener and stabiliser made from plant cellulose. EFSA's 2018 re-evaluation of the cellulose group found no safety concern; celluloses are not significantly absorbed or broken down in the gut."
+  dose_context: "EFSA concluded a numerical ADI was not needed. Research on emulsifiers and the gut microbiome is ongoing, but EFSA did not find a concern established at current intakes. A 2022 follow-up addressed use in foods for infants below 16 weeks of age."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e472e:
+  name: "Diacetyltartaric esters of mono- and diglycerides (DATEM)"
+  risk_level: "low"
+  evidence_summary: "DATEM (E 472e) is an emulsifier widely used in bread and baked goods, made from glycerol, fatty acids and tartaric acid. EFSA's 2020 re-evaluation (covering the E 472a-f esters) concluded there is no safety concern at current uses; the components are digested like ordinary dietary fats and acids."
+  dose_context: "EFSA did not consider a numerical ADI necessary. Older animal studies reporting heart effects used very high doses that EFSA did not find relevant at dietary exposure levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6032"
+
+e500:
+  name: "Sodium carbonates"
+  risk_level: "low"
+  evidence_summary: "Sodium carbonates (E 500) — including sodium carbonate and sodium bicarbonate (baking soda) — are acidity regulators and raising agents. They are simple, well-characterised salts long regarded as low concern; bicarbonate is a normal physiological buffer in the body."
+  dose_context: "The main practical consideration is the contribution to dietary sodium rather than toxicity of the carbonate itself. A completed standalone EFSA re-evaluation opinion for E 500 could not be confirmed at the time of writing."
+  source_url: ""
+  note: "SOURCE NEEDED — could not confirm a dedicated EFSA food-additive re-evaluation opinion for sodium carbonates (E 500); only food-contact-material opinions were found. Verify the status of the E 500 re-evaluation."
+
+e551:
+  name: "Silicon dioxide (silica)"
+  risk_level: "moderate"
+  evidence_summary: "Silicon dioxide (E 551) is an anti-caking agent (synthetic amorphous silica). EFSA's 2018 re-evaluation found no evidence of toxicity at reported uses but could not confirm a numerical ADI because of gaps in the data, particularly on the nanoparticle fraction of the material."
+  dose_context: "EFSA recommended that EU specifications be revised to characterise particle size and nano-scale content. There was no demonstrated harm at dietary exposure, but EFSA flagged uncertainty pending better nanomaterial data; a 2024 follow-up addressed infant foods."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5088"
