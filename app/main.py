@@ -1,4 +1,3 @@
-import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.additive_db import AdditiveDB
 from app.config import Settings
-from app.models import DimensionScore, OFFError, ScoreResult
+from app.models import DimensionScore, OFFError
 from app.off_client import OFFClient
 from app.scoring.additive_scorer import AdditiveScorer
 from app.scoring.food_engine import FoodScoringEngine
@@ -80,18 +79,11 @@ def create_app() -> FastAPI:
             )
 
         result = request.app.state.scoring_engine.score(product)
-        s = request.app.state.settings
 
         return templates.TemplateResponse(request, "product.html", {
             "product": product,
             "result": result,
-            "default_score": _weighted_score(result.dimensions, result.score_cap),
-            "score_data_json": json.dumps(_serialise(result)),
-            "default_weights": {
-                "nutrition": s.default_weight_nutrition,
-                "additives": s.default_weight_additives,
-                "nova": s.default_weight_nova,
-            },
+            "overall_score": _weighted_score(result.dimensions, result.score_cap),
         })
 
     return app
@@ -100,34 +92,6 @@ def create_app() -> FastAPI:
 def _weighted_score(dims: list[DimensionScore], score_cap: int | None) -> int:
     total = round(sum(d.score * d.weight_default for d in dims))
     return min(total, score_cap) if score_cap is not None else total
-
-
-def _serialise(result: ScoreResult) -> dict:
-    return {
-        "dimensions": [
-            {
-                "id": d.id, "label": d.label, "score": d.score,
-                "input_label": d.input_label, "input_value": d.input_value,
-                "weight_default": d.weight_default, "summary": d.summary,
-                "positives": d.positives,
-                "flags": [
-                    {
-                        "name": f.name, "e_number": f.e_number,
-                        "risk_level": f.risk_level.value,
-                        "evidence_summary": f.evidence_summary,
-                        "dose_context": f.dose_context,
-                        "source_url": f.source_url,
-                    }
-                    for f in d.flags
-                ],
-            }
-            for d in result.dimensions
-        ],
-        "confidence": result.confidence.value,
-        "confidence_notes": result.confidence_notes,
-        "score_cap": result.score_cap,
-        "score_cap_reasons": result.score_cap_reasons,
-    }
 
 
 app = create_app()

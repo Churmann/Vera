@@ -25,32 +25,40 @@
 
 <section class="overall-score">
   <div class="score-display">
-    <span class="score-number" id="overall-score-number">{{ default_score }}</span>
+    <span class="score-number" id="overall-score-number">{{ overall_score }}</span>
     <span class="score-label" id="overall-score-label">
-      {% if default_score >= 70 %}Good{% elif default_score >= 40 %}Mixed{% else %}Poor{% endif %}
+      {% if overall_score >= 70 %}Good{% elif overall_score >= 40 %}Mixed{% else %}Poor{% endif %}
     </span>
   </div>
-  <p class="score-note">Based on the weights below.</p>
+  <p class="score-note">A weighted judgement across three dimensions, using the fixed weights below.</p>
   {% if result.score_cap is not none %}
   <p class="score-cap-notice">Score capped at {{ result.score_cap }} — {{ result.score_cap_reasons | join(' and ') }}. A clean additives profile cannot offset fundamental nutrition and processing concerns.</p>
   {% endif %}
 </section>
 
-<section class="weight-controls">
-  <h2>Adjust Weights</h2>
-  <p class="weight-note">Drag to reprioritise. Weights always sum to 100%.</p>
-  {% for dim in result.dimensions %}
-  <div class="weight-row">
-    <label for="weight-{{ dim.id }}">
+<section class="weight-info">
+  <h2>How this score is weighted</h2>
+  <p class="weight-note">These weights are fixed and apply to every product, so the score is a consistent, comparable judgement — not something you can dial to a flattering number.</p>
+  <ul class="weight-list">
+    {% for dim in result.dimensions %}
+    <li class="weight-item">
       <span class="weight-label">{{ dim.label }}</span>
-      <span class="weight-value" id="weight-value-{{ dim.id }}">{{ (dim.weight_default * 100) | int }}%</span>
-    </label>
-    <input type="range" id="weight-{{ dim.id }}" class="weight-slider"
-           data-dim="{{ dim.id }}" min="0" max="100"
-           value="{{ (dim.weight_default * 100) | int }}">
-  </div>
-  {% endfor %}
-  <button class="reset-weights" id="reset-weights">Reset to defaults</button>
+      <span class="weight-bar" aria-hidden="true">
+        <span class="weight-bar-fill" style="width: {{ (dim.weight_default * 100) | int }}%"></span>
+      </span>
+      <span class="weight-value">{{ (dim.weight_default * 100) | int }}%</span>
+    </li>
+    {% endfor %}
+  </ul>
+  <details class="weight-why">
+    <summary>Why these weights?</summary>
+    <div class="weight-why-body">
+      <p><strong>Nutritional Quality — 50%.</strong> A food's nutrient profile (sugar, salt, saturated fat, fibre) has the most direct and best-established link to long-term health, so it carries the most weight.</p>
+      <p><strong>Additives — 30%.</strong> Additives reflect a precautionary read of the current evidence. Most approved additives are low-risk, so they matter — but less than the core nutrient content.</p>
+      <p><strong>Processing Level — 20%.</strong> The NOVA classification captures ultra-processing, which is associated with poorer health outcomes. The link is real but less direct than nutrient content, so it carries the least weight.</p>
+      <p class="weight-why-note">A separate cap can override the weighted total when a product is nutritionally poor or ultra-processed, so a clean additive profile alone can't earn a high score.</p>
+    </div>
+  </details>
 </section>
 
 <section class="dimensions" id="dimensions">
@@ -95,11 +103,4 @@
   </div>
   {% endfor %}
 </section>
-
-<script type="application/json" id="score-data">{{ score_data_json | safe }}</script>
-<script type="application/json" id="default-weights">{{ default_weights | tojson | safe }}</script>
-{% endblock %}
-
-{% block scripts %}
-<script src="/static/js/scorer.js"></script>
 {% endblock %}
