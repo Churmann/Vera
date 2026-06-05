@@ -1,3 +1,4 @@
+import asyncio
 import ssl
 import time
 from dataclasses import dataclass
@@ -13,6 +14,10 @@ _SEARCH_URL = "https://search.openfoodfacts.org/search"
 _SEARCH_FIELDS = "code,product_name,brands,image_url"
 _PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
 _PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags"
+# Enough to pre-rank a candidate without fetching the full product. additives_tags is
+# NOT available from search (only additives_n), so promising candidates are still
+# fetched in full for accurate additive scoring.
+_CATEGORY_FIELDS = "code,nutriscore_grade,nova_group"
 
 
 @dataclass
@@ -21,6 +26,14 @@ class ProductSummary:
     name: str
     brand: str | None
     image_url: str | None
+
+
+@dataclass
+class CategoryCandidate:
+    """A category-search hit, with just the fields needed to pre-rank it cheaply."""
+    code: str
+    nutriscore_grade: str | None  # A–E
+    nova_group: int | None        # 1–4
 
 
 class OFFClient:
@@ -32,18 +45,32 @@ class OFFClient:
         )
         self._cache: dict[str, tuple[NormalisedProduct, float]] = {}
         self._ttl = settings.off_cache_ttl
+        self._max_retries = settings.off_max_retries
+        self._retry_backoff = settings.off_retry_backoff
+
+    async def _get(self, url: str, params: dict) -> httpx.Response:
+        """GET with exponential backoff retry on HTTP 429. Transport failures map to
+        OFFError immediately (not retried). Status-code interpretation is left to the
+        caller; a persistently rate-limited request returns the final 429 response."""
+        for attempt in range(self._max_retries + 1):
+            try:
+                resp = await self._client.get(url, params=params)
+            except httpx.TimeoutException:
+                raise OFFError("Request timed out", "timeout")
+            except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
+                raise OFFError(str(e), "network_error")
+            if resp.status_code == 429 and attempt < self._max_retries:
+                await asyncio.sleep(self._retry_backoff * (2 ** attempt))
+                continue
+            return resp
+        return resp  # all attempts were 429 — caller raises rate_limited
 
     async def search(self, query: str) -> list[ProductSummary]:
-        try:
-            resp = await self._client.get(_SEARCH_URL, params={
-                "q": query,
-                "page_size": 10,
-                "fields": _SEARCH_FIELDS,
-            })
-        except httpx.TimeoutException:
-            raise OFFError("Request timed out", "timeout")
-        except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
-            raise OFFError(str(e), "network_error")
+        resp = await self._get(_SEARCH_URL, params={
+            "q": query,
+            "page_size": 10,
+            "fields": _SEARCH_FIELDS,
+        })
 
         if resp.status_code == 429:
             raise OFFError("Rate limit reached", "rate_limited")
@@ -68,18 +95,17 @@ class OFFClient:
             ))
         return results
 
-    async def search_category(self, tag: str, page_size: int = 12) -> list[str]:
-        """Return product codes in a given OFF category tag (most relevant first)."""
-        try:
-            resp = await self._client.get(_SEARCH_URL, params={
-                "q": f'categories_tags:"{tag}"',
-                "page_size": page_size,
-                "fields": "code",
-            })
-        except httpx.TimeoutException:
-            raise OFFError("Request timed out", "timeout")
-        except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
-            raise OFFError(str(e), "network_error")
+    async def search_category(self, tag: str, page_size: int = 12) -> list[CategoryCandidate]:
+        """Return candidates in a given OFF category tag, each carrying the Nutri-Score
+        and NOVA needed to pre-rank it before deciding whether to fetch it in full."""
+        resp = await self._get(_SEARCH_URL, params={
+            "q": f'categories_tags:"{tag}"',
+            "page_size": page_size,
+            "fields": _CATEGORY_FIELDS,
+            # A bare category filter has no relevance ranking, so OFF otherwise
+            # returns a varying page. Sort by popularity for a stable, recognisable set.
+            "sort_by": "-popularity_key",
+        })
 
         if resp.status_code == 429:
             raise OFFError("Rate limit reached", "rate_limited")
@@ -87,27 +113,26 @@ class OFFClient:
             raise OFFError(f"Open Food Facts returned {resp.status_code}", "network_error")
         resp.raise_for_status()
 
-        codes = []
+        candidates = []
         for p in resp.json().get("hits", []):
             code = (p.get("code") or "").strip()
             if code:
-                codes.append(code)
-        return codes
+                candidates.append(CategoryCandidate(
+                    code=code,
+                    nutriscore_grade=_parse_grade(p.get("nutriscore_grade")),
+                    nova_group=_parse_nova(p.get("nova_group")),
+                ))
+        return candidates
 
     async def fetch_product(self, off_id: str) -> NormalisedProduct:
         cached = self._cache.get(off_id)
         if cached and time.monotonic() - cached[1] < self._ttl:
             return cached[0]
 
-        try:
-            resp = await self._client.get(
-                _PRODUCT_URL.format(code=off_id),
-                params={"fields": _PRODUCT_FIELDS},
-            )
-        except httpx.TimeoutException:
-            raise OFFError("Request timed out", "timeout")
-        except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
-            raise OFFError(str(e), "network_error")
+        resp = await self._get(
+            _PRODUCT_URL.format(code=off_id),
+            params={"fields": _PRODUCT_FIELDS},
+        )
 
         if resp.status_code == 404:
             raise OFFError(f"Product {off_id} not found", "not_found")
@@ -140,6 +165,22 @@ def _collapse_e_number(code: str) -> str:
     return m.group(1) if m else code
 
 
+def _parse_grade(raw) -> str | None:
+    grade = (raw or "").upper().strip()
+    return grade if grade in ("A", "B", "C", "D", "E") else None
+
+
+def _parse_nova(raw) -> int | None:
+    try:
+        if raw is not None:
+            nova = int(raw)
+            if nova in (1, 2, 3, 4):
+                return nova
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
 def _normalise(off_id: str, p: dict) -> NormalisedProduct:
     seen: set[str] = set()
     additives: list[str] = []
@@ -152,25 +193,12 @@ def _normalise(off_id: str, p: dict) -> NormalisedProduct:
                 seen.add(base)
                 additives.append(base)
 
-    grade = (p.get("nutriscore_grade") or "").upper().strip()
-    grade = grade if grade in ("A", "B", "C", "D", "E") else None
-
-    nova: int | None = None
-    try:
-        nova_raw = p.get("nova_group")
-        if nova_raw is not None:
-            nova = int(nova_raw)
-            if nova not in (1, 2, 3, 4):
-                nova = None
-    except (ValueError, TypeError):
-        pass
-
     return NormalisedProduct(
         off_id=off_id,
         name=(p.get("product_name") or "").strip() or "Unknown product",
         brand=(p.get("brands") or "").split(",")[0].strip() or None,
-        nutriscore_grade=grade,
-        nova_group=nova,
+        nutriscore_grade=_parse_grade(p.get("nutriscore_grade")),
+        nova_group=_parse_nova(p.get("nova_group")),
         additives=additives,
         ingredients_text=(p.get("ingredients_text") or "").strip() or None,
         image_url=p.get("image_url") or None,

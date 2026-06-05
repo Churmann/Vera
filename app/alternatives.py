@@ -1,4 +1,5 @@
 import asyncio
+import re
 from dataclasses import dataclass
 
 from app.models import NormalisedProduct, OFFError
@@ -52,10 +53,36 @@ def _reason(current: NormalisedProduct, current_dims, candidate: NormalisedProdu
     return "Cleaner additives"
 
 
+# Cap simultaneous OFF product fetches. A whole candidate pool fired at once
+# burst-trips the API rate limit (429); a small ceiling keeps us under it.
+_MAX_CONCURRENT_FETCHES = 4
+
+
+def _could_beat(engine: FoodScoringEngine, candidate, current_score: int) -> bool:
+    """Upper bound on a candidate's uncapped score from Nutri-Score + NOVA alone,
+    assuming a perfect (additive-free) profile. If even that can't exceed the current
+    score, the real product can't either, so it isn't worth fetching. Candidates
+    missing either field are rejected — we never recommend products with missing data."""
+    if candidate.nutriscore_grade is None or candidate.nova_group is None:
+        return False
+    best_case = NormalisedProduct(
+        off_id=candidate.code, name="", brand=None,
+        nutriscore_grade=candidate.nutriscore_grade, nova_group=candidate.nova_group,
+        additives=[], ingredients_text=None, image_url=None, raw_off_url="",
+    )
+    return uncapped_overall(engine.score(best_case)) > current_score
+
+
 async def _fetch_many(off_client, codes: list[str]) -> list[NormalisedProduct]:
-    """Fetch products concurrently, skipping any that fail."""
+    """Fetch products with bounded concurrency, skipping any that fail."""
+    sem = asyncio.Semaphore(_MAX_CONCURRENT_FETCHES)
+
+    async def _one(code: str):
+        async with sem:
+            return await off_client.fetch_product(code)
+
     results = await asyncio.gather(
-        *(off_client.fetch_product(c) for c in codes), return_exceptions=True
+        *(_one(c) for c in codes), return_exceptions=True
     )
     return [r for r in results if isinstance(r, NormalisedProduct)]
 
@@ -93,15 +120,25 @@ async def find_better_alternatives(
     best: list[Alternative] = []
     for tag in tags[:max_levels]:
         try:
-            codes = await off_client.search_category(tag, page_size=candidate_pool)
+            candidates = await off_client.search_category(tag, page_size=candidate_pool)
         except OFFError:
-            continue
+            # A rate-limited/failed search is NOT an empty category. Stop here and
+            # return what we already have rather than broadening into a parent
+            # category and recommending unrelated products.
+            break
 
         seen: set[str] = {product.off_id}
-        unique = [c for c in codes if not (c in seen or seen.add(c))]
+        unique = [c for c in candidates if not (c.code in seen or seen.add(c.code))]
+
+        # Pre-filter on the Nutri-Score + NOVA the search already gave us: only fetch
+        # the full product for candidates that *could* beat the current score even with
+        # a perfect additives profile. This keeps the product-endpoint fan-out small
+        # enough not to trip its rate limit, while never pruning a genuine improvement
+        # (the estimate is an upper bound — real additives can only lower the score).
+        to_fetch = [c.code for c in unique if _could_beat(engine, c, current_score)]
 
         ranked: list[tuple[int, Alternative]] = []
-        for p in await _fetch_many(off_client, unique):
+        for p in await _fetch_many(off_client, to_fetch):
             if p.nova_group is None or p.nutriscore_grade is None:
                 continue  # don't recommend products with missing data
             result = engine.score(p)
@@ -110,7 +147,8 @@ async def find_better_alternatives(
                 display = weighted_overall(result)
                 reason = _reason(product, current_dims, p, result.dimensions)
                 ranked.append((rank, Alternative(p.off_id, p.name, p.brand, p.image_url, display, _band(display), reason)))
-        ranked.sort(key=lambda t: t[0], reverse=True)
+        # Rank descending, breaking ties by off_id so the order is stable across loads.
+        ranked.sort(key=lambda t: (-t[0], t[1].off_id))
         alts = [a for _, a in ranked]
 
         if len(alts) >= 2:
@@ -121,11 +159,33 @@ async def find_better_alternatives(
     return best[:max_results]
 
 
+# Categories so broad they mix unrelated product types — e.g. every drink together,
+# or all plant products / all food. Broadening into these is what surfaced juice,
+# tea and yogurt as "alternatives" to a cola, so they are never searched.
+_TOO_GENERIC_TAGS = frozenset({
+    "en:foods",
+    "en:groceries",
+    "en:beverages",
+    "en:beverages-and-beverages-preparations",
+    "en:plant-based-foods",
+    "en:plant-based-foods-and-beverages",
+})
+
+# A canonical OFF category tag is an ``en:`` prefix followed by a lowercase,
+# hyphenated ASCII slug. OFF also carries untranslated tags like
+# ``en:Pâtes à tartiner`` (capitals/spaces/accents) that don't exist in the search
+# index — those must be rejected so they don't waste search levels.
+_CANONICAL_EN_TAG = re.compile(r"^en:[a-z0-9-]+$")
+
+
 def _ordered_category_tags(categories: list[str]) -> list[str]:
     """English category tags, most-specific first.
 
     OFF orders categories_tags broad → specific, so reversing puts the most
-    specific category first. Non-``en:`` tags are dropped.
+    specific category first. Tags are kept only if they are canonical ``en:`` slugs
+    (dropping non-English and malformed/untranslated tags) and not so generic
+    (``_TOO_GENERIC_TAGS``) that they mix unrelated product types.
     """
-    en_tags = [c for c in categories if c.startswith("en:")]
+    en_tags = [c for c in categories
+               if _CANONICAL_EN_TAG.match(c) and c not in _TOO_GENERIC_TAGS]
     return list(reversed(en_tags))

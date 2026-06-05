@@ -9,7 +9,9 @@ from app.off_client import OFFClient
 
 @pytest.fixture
 def settings():
-    return Settings(off_user_agent="TestApp/1.0", off_request_timeout=5.0, off_cache_ttl=300)
+    # off_retry_backoff=0.0 keeps retry tests instant; off_max_retries=2 makes call counts deterministic.
+    return Settings(off_user_agent="TestApp/1.0", off_request_timeout=5.0, off_cache_ttl=300,
+                    off_max_retries=2, off_retry_backoff=0.0)
 
 
 @respx.mock
@@ -156,23 +158,40 @@ async def test_fetch_product_preserves_letter_variant_additives(settings):
 
 
 @respx.mock
-async def test_search_category_returns_codes_and_filters_by_tag(settings):
+async def test_search_category_returns_candidates_with_scoring_fields(settings):
     route = respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(200, json={
             "hits": [
-                {"code": "111", "product_name": "A"},
-                {"code": "222", "product_name": "B"},
-                {"code": "", "product_name": "no code"},
+                {"code": "111", "nutriscore_grade": "a", "nova_group": 1},
+                {"code": "222", "nutriscore_grade": "e", "nova_group": 4},
+                {"code": "", "nutriscore_grade": "a"},  # no code -> skipped
             ]
         })
     )
     client = OFFClient(settings)
-    codes = await client.search_category("en:chocolate-spreads", page_size=12)
+    cands = await client.search_category("en:chocolate-spreads", page_size=12)
     await client.aclose()
-    assert codes == ["111", "222"]
-    # The query filters on the category tag.
-    sent_q = route.calls.last.request.url.params.get("q")
-    assert "categories_tags" in sent_q and "en:chocolate-spreads" in sent_q
+    assert [c.code for c in cands] == ["111", "222"]
+    # Nutri-Score + NOVA are parsed so candidates can be pre-ranked without a fetch.
+    assert cands[0].nutriscore_grade == "A" and cands[0].nova_group == 1
+    assert cands[1].nutriscore_grade == "E" and cands[1].nova_group == 4
+    sent = route.calls.last.request.url.params
+    assert "categories_tags" in sent.get("q") and "en:chocolate-spreads" in sent.get("q")
+    assert "nutriscore_grade" in sent.get("fields") and "nova_group" in sent.get("fields")
+
+
+@respx.mock
+async def test_search_category_sorts_deterministically_by_popularity(settings):
+    """A bare category filter has no relevance signal, so OFF returns an arbitrary,
+    varying page. A deterministic sort makes the candidate set stable across loads
+    (and surfaces the most-scanned, recognisable products first)."""
+    route = respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={"hits": [{"code": "111"}]})
+    )
+    client = OFFClient(settings)
+    await client.search_category("en:colas")
+    await client.aclose()
+    assert route.calls.last.request.url.params.get("sort_by") == "-popularity_key"
 
 
 @respx.mock
@@ -185,6 +204,52 @@ async def test_search_category_raises_on_rate_limit(settings):
         await client.search_category("en:chocolate-spreads")
     await client.aclose()
     assert exc.value.kind == "rate_limited"
+
+
+@respx.mock
+async def test_fetch_product_retries_on_rate_limit_then_succeeds(settings):
+    """A transient 429 is retried with backoff before giving up — it must not bubble up."""
+    route = respx.get("https://world.openfoodfacts.org/api/v2/product/123.json").mock(
+        side_effect=[
+            httpx.Response(429),
+            httpx.Response(429),
+            httpx.Response(200, json={"product": {"product_name": "Nutella", "brands": "Ferrero"}}),
+        ]
+    )
+    client = OFFClient(settings)
+    product = await client.fetch_product("123")
+    await client.aclose()
+    assert product.name == "Nutella"
+    assert route.call_count == 3
+
+
+@respx.mock
+async def test_fetch_product_raises_rate_limited_after_exhausting_retries(settings):
+    """Persistent 429 still raises rate_limited, after initial try + off_max_retries retries."""
+    route = respx.get("https://world.openfoodfacts.org/api/v2/product/123.json").mock(
+        return_value=httpx.Response(429)
+    )
+    client = OFFClient(settings)
+    with pytest.raises(OFFError) as exc:
+        await client.fetch_product("123")
+    await client.aclose()
+    assert exc.value.kind == "rate_limited"
+    assert route.call_count == 3  # 1 initial + 2 retries (off_max_retries=2)
+
+
+@respx.mock
+async def test_search_category_retries_on_rate_limit_then_succeeds(settings):
+    route = respx.get("https://search.openfoodfacts.org/search").mock(
+        side_effect=[
+            httpx.Response(429),
+            httpx.Response(200, json={"hits": [{"code": "111"}]}),
+        ]
+    )
+    client = OFFClient(settings)
+    cands = await client.search_category("en:colas")
+    await client.aclose()
+    assert [c.code for c in cands] == ["111"]
+    assert route.call_count == 2
 
 
 @respx.mock

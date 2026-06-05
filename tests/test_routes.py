@@ -138,7 +138,10 @@ def test_product_page_shows_better_alternatives():
         }})
     )
     respx.get("https://search.openfoodfacts.org/search").mock(
-        return_value=httpx.Response(200, json={"hits": [{"code": "alt1"}, {"code": "alt2"}]})
+        return_value=httpx.Response(200, json={"hits": [
+            {"code": "alt1", "nutriscore_grade": "a", "nova_group": 1},
+            {"code": "alt2", "nutriscore_grade": "b", "nova_group": 2},
+        ]})
     )
     respx.get("https://world.openfoodfacts.org/api/v2/product/alt1.json").mock(
         return_value=httpx.Response(200, json={"product": {
