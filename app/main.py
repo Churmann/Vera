@@ -7,11 +7,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.additive_db import AdditiveDB
+from app.alternatives import find_better_alternatives
 from app.config import Settings
-from app.models import DimensionScore, OFFError
+from app.models import OFFError
 from app.off_client import OFFClient
 from app.scoring.additive_scorer import AdditiveScorer
-from app.scoring.food_engine import FoodScoringEngine
+from app.scoring.food_engine import FoodScoringEngine, weighted_overall, weighted_score
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -79,19 +80,31 @@ def create_app() -> FastAPI:
             )
 
         result = request.app.state.scoring_engine.score(product)
+        overall_score = weighted_overall(result)
+
+        # A failing alternatives lookup must never break the score page.
+        try:
+            alternatives = await find_better_alternatives(
+                request.app.state.off_client,
+                request.app.state.scoring_engine,
+                product,
+                overall_score,
+            )
+        except OFFError:
+            alternatives = []
 
         return templates.TemplateResponse(request, "product.html", {
             "product": product,
             "result": result,
-            "overall_score": _weighted_score(result.dimensions, result.score_cap),
+            "overall_score": overall_score,
+            "alternatives": alternatives,
         })
 
     return app
 
 
-def _weighted_score(dims: list[DimensionScore], score_cap: int | None) -> int:
-    total = round(sum(d.score * d.weight_default for d in dims))
-    return min(total, score_cap) if score_cap is not None else total
+# Re-exported for callers/tests that work with raw dimensions + cap.
+_weighted_score = weighted_score
 
 
 app = create_app()

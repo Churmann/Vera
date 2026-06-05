@@ -49,6 +49,8 @@ class NormalisedProduct:
     ingredients_text: str | None
     image_url: str | None
     raw_off_url: str
+    # OFF categories_tags, ordered broad → most-specific (as OFF returns them).
+    categories: list[str] = field(default_factory=list)
 
 
 @dataclass

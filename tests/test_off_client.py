@@ -156,6 +156,53 @@ async def test_fetch_product_preserves_letter_variant_additives(settings):
 
 
 @respx.mock
+async def test_search_category_returns_codes_and_filters_by_tag(settings):
+    route = respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={
+            "hits": [
+                {"code": "111", "product_name": "A"},
+                {"code": "222", "product_name": "B"},
+                {"code": "", "product_name": "no code"},
+            ]
+        })
+    )
+    client = OFFClient(settings)
+    codes = await client.search_category("en:chocolate-spreads", page_size=12)
+    await client.aclose()
+    assert codes == ["111", "222"]
+    # The query filters on the category tag.
+    sent_q = route.calls.last.request.url.params.get("q")
+    assert "categories_tags" in sent_q and "en:chocolate-spreads" in sent_q
+
+
+@respx.mock
+async def test_search_category_raises_on_rate_limit(settings):
+    respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(429)
+    )
+    client = OFFClient(settings)
+    with pytest.raises(OFFError) as exc:
+        await client.search_category("en:chocolate-spreads")
+    await client.aclose()
+    assert exc.value.kind == "rate_limited"
+
+
+@respx.mock
+async def test_fetch_product_parses_categories(settings):
+    """categories_tags is exposed on the product, most-specific last, as OFF orders it."""
+    respx.get("https://world.openfoodfacts.org/api/v2/product/654.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella",
+            "categories_tags": ["en:spreads", "en:sweet-spreads", "en:chocolate-spreads"],
+        }})
+    )
+    client = OFFClient(settings)
+    product = await client.fetch_product("654")
+    await client.aclose()
+    assert product.categories == ["en:spreads", "en:sweet-spreads", "en:chocolate-spreads"]
+
+
+@respx.mock
 async def test_fetch_product_uses_first_brand(settings):
     """Multiple comma-separated brands should show only the first."""
     respx.get("https://world.openfoodfacts.org/api/v2/product/321.json").mock(

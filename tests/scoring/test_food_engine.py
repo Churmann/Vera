@@ -104,3 +104,20 @@ def test_nutriscore_d_does_not_trigger_cap(engine, make_product):
     """Nutri-Score D maps to score 40, above NUTRITION_CAP_THRESHOLD of 20 — no cap."""
     result = engine.score(make_product(nutriscore_grade="D", nova_group=2))
     assert result.score_cap is None
+
+
+# --- weighted_overall: shared single source of truth for the overall score ---
+
+def test_weighted_overall_computes_from_result_dimensions(engine, make_product):
+    from app.scoring.food_engine import weighted_overall
+    result = engine.score(make_product(nutriscore_grade="B", nova_group=1))
+    expected = round(sum(d.score * d.weight_default for d in result.dimensions))
+    assert weighted_overall(result) == expected
+
+
+def test_weighted_overall_applies_score_cap(engine, make_product):
+    """A capped product's overall must not exceed the cap."""
+    from app.scoring.food_engine import weighted_overall
+    result = engine.score(make_product(nutriscore_grade="E", nova_group=4))
+    assert result.score_cap == 35
+    assert weighted_overall(result) == 35

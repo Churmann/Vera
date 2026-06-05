@@ -12,7 +12,7 @@ from app.models import NormalisedProduct, OFFError
 _SEARCH_URL = "https://search.openfoodfacts.org/search"
 _SEARCH_FIELDS = "code,product_name,brands,image_url"
 _PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
-_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text"
+_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags"
 
 
 @dataclass
@@ -67,6 +67,32 @@ class OFFClient:
                 image_url=p.get("image_url") or None,
             ))
         return results
+
+    async def search_category(self, tag: str, page_size: int = 12) -> list[str]:
+        """Return product codes in a given OFF category tag (most relevant first)."""
+        try:
+            resp = await self._client.get(_SEARCH_URL, params={
+                "q": f'categories_tags:"{tag}"',
+                "page_size": page_size,
+                "fields": "code",
+            })
+        except httpx.TimeoutException:
+            raise OFFError("Request timed out", "timeout")
+        except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
+            raise OFFError(str(e), "network_error")
+
+        if resp.status_code == 429:
+            raise OFFError("Rate limit reached", "rate_limited")
+        if resp.status_code >= 500:
+            raise OFFError(f"Open Food Facts returned {resp.status_code}", "network_error")
+        resp.raise_for_status()
+
+        codes = []
+        for p in resp.json().get("hits", []):
+            code = (p.get("code") or "").strip()
+            if code:
+                codes.append(code)
+        return codes
 
     async def fetch_product(self, off_id: str) -> NormalisedProduct:
         cached = self._cache.get(off_id)
@@ -149,4 +175,5 @@ def _normalise(off_id: str, p: dict) -> NormalisedProduct:
         ingredients_text=(p.get("ingredients_text") or "").strip() or None,
         image_url=p.get("image_url") or None,
         raw_off_url=f"https://world.openfoodfacts.org/product/{off_id}/",
+        categories=[c for c in (p.get("categories_tags") or []) if c],
     )

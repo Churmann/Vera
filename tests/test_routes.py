@@ -127,6 +127,88 @@ def test_product_page_shows_category_icon_and_risk_text():
 
 
 @respx.mock
+def test_product_page_shows_better_alternatives():
+    # Current product: Nutella, E + NOVA 4 → capped low score.
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "e", "nova_group": 4, "additives_tags": [],
+            "ingredients_text": "Sugar", "image_url": None,
+            "categories_tags": ["en:spreads", "en:chocolate-spreads"],
+        }})
+    )
+    respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={"hits": [{"code": "alt1"}, {"code": "alt2"}]})
+    )
+    respx.get("https://world.openfoodfacts.org/api/v2/product/alt1.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Healthy Spread", "brands": "GoodCo",
+            "nutriscore_grade": "a", "nova_group": 1, "additives_tags": [],
+            "image_url": "http://img/alt1.jpg", "categories_tags": ["en:chocolate-spreads"],
+        }})
+    )
+    respx.get("https://world.openfoodfacts.org/api/v2/product/alt2.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Better Spread", "brands": "OkCo",
+            "nutriscore_grade": "b", "nova_group": 2, "additives_tags": [],
+            "image_url": None, "categories_tags": ["en:chocolate-spreads"],
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    text = response.text
+    assert "Better alternatives" in text
+    assert "Healthy Spread" in text and "Better Spread" in text
+    assert "/product/alt1" in text
+    # Higher-scoring alternative shown first.
+    assert text.index("Healthy Spread") < text.index("Better Spread")
+
+
+@respx.mock
+def test_product_page_shows_no_alternatives_note():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "a", "nova_group": 1, "additives_tags": [],
+            "ingredients_text": "Hazelnuts", "image_url": None,
+            "categories_tags": ["en:spreads", "en:chocolate-spreads"],
+        }})
+    )
+    respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={"hits": [{"code": "alt1"}]})
+    )
+    respx.get("https://world.openfoodfacts.org/api/v2/product/alt1.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Worse Spread", "brands": "MehCo",
+            "nutriscore_grade": "d", "nova_group": 4, "additives_tags": [],
+            "image_url": None, "categories_tags": ["en:chocolate-spreads"],
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    assert "No better alternatives found" in response.text
+
+
+@respx.mock
+def test_product_page_renders_when_alternatives_lookup_fails():
+    """A failing alternatives lookup must not break the main score page."""
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "c", "nova_group": 2, "additives_tags": [],
+            "ingredients_text": "Sugar", "image_url": None,
+            "categories_tags": ["en:chocolate-spreads"],
+        }})
+    )
+    respx.get("https://search.openfoodfacts.org/search").mock(return_value=httpx.Response(429))
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    assert response.status_code == 200
+    assert "Nutella" in response.text
+    assert "No better alternatives found" in response.text
+
+
+@respx.mock
 def test_product_not_found_returns_404():
     respx.get("https://world.openfoodfacts.org/api/v2/product/000.json").mock(
         return_value=httpx.Response(404, json={"status": 0})

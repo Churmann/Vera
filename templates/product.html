@@ -52,6 +52,38 @@
   {% endif %}
 </section>
 
+<section class="alternatives">
+  <h2>Better alternatives</h2>
+  {% if alternatives %}
+  <p class="alternatives-note">Higher-scoring products in the same category.</p>
+  <ul class="alt-grid">
+    {% for alt in alternatives %}
+    <li class="alt-card">
+      <a href="/product/{{ alt.off_id }}" class="alt-link">
+        <span class="alt-thumb">
+          {% if alt.image_url %}
+          <img src="{{ alt.image_url }}" alt="{{ alt.name }}" loading="lazy">
+          {% else %}
+          <span class="alt-thumb-placeholder" aria-hidden="true">🍽</span>
+          {% endif %}
+        </span>
+        <span class="alt-info">
+          <span class="alt-name">{{ alt.name }}</span>
+          {% if alt.brand %}<span class="alt-brand">{{ alt.brand }}</span>{% endif %}
+        </span>
+        <span class="alt-score">
+          <span class="alt-score-dot alt-score-dot--{{ alt.band }}" aria-hidden="true"></span>
+          <span class="alt-score-number">{{ alt.score }}</span>
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="alternatives-empty">No better alternatives found in this category.</p>
+  {% endif %}
+</section>
+
 <section class="weight-info">
   <h2>How this score is weighted</h2>
   <p class="weight-note">These weights are fixed and apply to every product, so the score is a consistent, comparable judgement — not something you can dial to a flattering number.</p>

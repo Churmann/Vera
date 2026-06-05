@@ -149,6 +149,41 @@ a { color: inherit; }
   border-radius: var(--radius-sm); font-size: .82rem; font-weight: 500;
 }
 
+/* Better alternatives */
+.alternatives {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow);
+}
+.alternatives h2 { font-size: 1.05rem; margin-bottom: .25rem; }
+.alternatives-note { font-size: .82rem; color: var(--color-text-muted); margin-bottom: 1rem; }
+.alternatives-empty { font-size: .85rem; color: var(--color-text-muted); margin-top: .25rem; }
+.alt-grid { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+.alt-card { border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+.alt-link {
+  display: flex; align-items: center; gap: .85rem; padding: .6rem .75rem;
+  text-decoration: none; color: var(--color-text); transition: background .15s;
+}
+.alt-link:hover { background: var(--color-bg); }
+.alt-thumb {
+  flex: 0 0 auto; width: 44px; height: 44px; border-radius: var(--radius-sm);
+  background: var(--color-bg); border: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.alt-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.alt-thumb-placeholder { font-size: 1.1rem; opacity: .5; }
+.alt-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.alt-name {
+  font-weight: 600; font-size: .92rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.alt-brand { font-size: .78rem; color: var(--color-text-muted); }
+.alt-score { flex: 0 0 auto; display: flex; align-items: center; gap: .4rem; }
+.alt-score-dot { width: 11px; height: 11px; border-radius: 50%; }
+.alt-score-dot--good { background: var(--color-good); }
+.alt-score-dot--mixed { background: var(--color-moderate); }
+.alt-score-dot--poor { background: var(--color-poor); }
+.alt-score-number { font-weight: 700; font-size: 1.05rem; min-width: 1.6rem; text-align: right; }
+
 /* Weight info (fixed, non-adjustable) */
 .weight-info {
   background: var(--color-surface); border: 1px solid var(--color-border);

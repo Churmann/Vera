@@ -33,6 +33,16 @@ class FoodScoringEngine:
         )
 
 
+def weighted_score(dims: list, score_cap: int | None) -> int:
+    total = round(sum(d.score * d.weight_default for d in dims))
+    return min(total, score_cap) if score_cap is not None else total
+
+
+def weighted_overall(result: ScoreResult) -> int:
+    """The single source of truth for a product's overall score (0–100)."""
+    return weighted_score(result.dimensions, result.score_cap)
+
+
 def _confidence(product: NormalisedProduct) -> tuple[ConfidenceLevel, list[str]]:
     notes: list[str] = []
     if product.nutriscore_grade is None:
