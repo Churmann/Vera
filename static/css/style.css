@@ -14,6 +14,16 @@
   --color-poor-bg: #fef2f2;
   --color-unknown: #6b7280;
   --color-unknown-bg: #f9fafb;
+  /* Muted, calm risk palette for additive cards — deliberately soft and
+     non-alarmist (the opposite of a traffic-light scheme). */
+  --risk-low: #5f8367;        /* soft sage green */
+  --risk-low-bg: #eef3ee;
+  --risk-moderate: #b08a4e;   /* gentle amber */
+  --risk-moderate-bg: #f6f0e2;
+  --risk-high: #a76258;       /* restrained muted red */
+  --risk-high-bg: #f2e6e3;
+  --risk-unknown: #7b8290;    /* calm slate */
+  --risk-unknown-bg: #f0f1f3;
   --radius: 12px;
   --radius-sm: 6px;
   --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
@@ -210,6 +220,18 @@ a { color: inherit; }
 .evidence-card[open] > summary { background: var(--color-bg); }
 .additive-name { font-weight: 600; }
 .additive-enum { color: var(--color-text-muted); font-size: .78rem; }
+
+/* Category icon badge — shape conveys category, tint conveys risk level.
+   Colour is never the only signal: the text risk chip stays alongside. */
+.additive-icon {
+  flex-shrink: 0; width: 1.85rem; height: 1.85rem; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.additive-icon-svg { width: 1.1rem; height: 1.1rem; display: block; }
+.additive-icon--low { background: var(--risk-low-bg); color: var(--risk-low); }
+.additive-icon--moderate { background: var(--risk-moderate-bg); color: var(--risk-moderate); }
+.additive-icon--high { background: var(--risk-high-bg); color: var(--risk-high); }
+.additive-icon--unknown { background: var(--risk-unknown-bg); color: var(--risk-unknown); }
 .evidence-body {
   padding: .75rem .85rem; font-size: .85rem;
   display: flex; flex-direction: column; gap: .4rem;
@@ -218,15 +240,15 @@ a { color: inherit; }
 .source-link { color: var(--color-accent); text-decoration: none; font-size: .82rem; }
 .source-link:hover { text-decoration: underline; }
 
-/* Risk chips */
+/* Risk chips — text label kept for accessibility; muted to match the sober tone */
 .risk-chip {
-  padding: .15rem .55rem; border-radius: 999px;
-  font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0;
+  margin-left: auto; padding: .15rem .55rem; border-radius: 999px;
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0;
 }
-.risk-chip--high { background: var(--color-poor-bg); color: var(--color-poor); }
-.risk-chip--moderate { background: var(--color-moderate-bg); color: var(--color-moderate); }
-.risk-chip--low { background: var(--color-good-bg); color: var(--color-good); }
-.risk-chip--unknown { background: var(--color-unknown-bg); color: var(--color-unknown); }
+.risk-chip--high { background: var(--risk-high-bg); color: var(--risk-high); }
+.risk-chip--moderate { background: var(--risk-moderate-bg); color: var(--risk-moderate); }
+.risk-chip--low { background: var(--risk-low-bg); color: var(--risk-low); }
+.risk-chip--unknown { background: var(--risk-unknown-bg); color: var(--risk-unknown); }
 
 /* Error page */
 .error-page { text-align: center; padding: 4rem 0; }

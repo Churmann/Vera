@@ -1,6 +1,22 @@
 {% extends "base.html" %}
 {% block title %}{{ product.name }} — Vera{% endblock %}
 
+{#- Simple inline SVG icon per additive category (no external image files). -#}
+{% macro category_icon(cat) -%}
+{%- set svg = {
+  "colour": '<path d="M12 3c3.5 4 6 7 6 10a6 6 0 0 1-12 0c0-3 2.5-6 6-10z"/>',
+  "sweetener": '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/>',
+  "preservative": '<path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/>',
+  "emulsifier": '<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>',
+  "acid": '<path d="M9.5 3h5"/><path d="M10.5 3v5l-4.6 8.2A2 2 0 0 0 7.7 19h8.6a2 2 0 0 0 1.8-2.8L13.5 8V3"/><path d="M7.5 14h9"/>',
+  "mineral": '<path d="M12 3l8 7-8 11L4 10l8-7z"/><path d="M4 10h16"/>',
+  "glazing": '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/>',
+  "flavour": '<circle cx="12" cy="12" r="3"/><path d="M12 4v2"/><path d="M12 18v2"/><path d="M4 12h2"/><path d="M18 12h2"/><path d="M6.3 6.3l1.4 1.4"/><path d="M16.3 16.3l1.4 1.4"/><path d="M17.7 6.3l-1.4 1.4"/><path d="M7.7 16.3l-1.4 1.4"/>',
+  "other": '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/>'
+} -%}
+<svg class="additive-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ svg.get(cat, svg["other"]) | safe }}</svg>
+{%- endmacro %}
+
 {% block content %}
 <div class="product-header">
   {% if product.image_url %}
@@ -85,9 +101,14 @@
       {% for flag in dim.flags %}
       <details class="evidence-card evidence-card--{{ flag.risk_level.value }}">
         <summary>
-          <span class="risk-chip risk-chip--{{ flag.risk_level.value }}">{{ flag.risk_level.value | title }}</span>
+          <span class="additive-icon additive-icon--{{ flag.risk_level.value }}"
+                data-category="{{ flag.category }}"
+                title="{{ flag.category | title }} · {{ flag.risk_level.value | title }} risk">
+            {{ category_icon(flag.category) }}
+          </span>
           <span class="additive-name">{{ flag.name }}</span>
           <span class="additive-enum">({{ flag.e_number | upper }})</span>
+          <span class="risk-chip risk-chip--{{ flag.risk_level.value }}">{{ flag.risk_level.value | title }}</span>
         </summary>
         <div class="evidence-body">
           <p><strong>Evidence:</strong> {{ flag.evidence_summary }}</p>

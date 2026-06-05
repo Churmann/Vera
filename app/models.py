@@ -33,6 +33,9 @@ class AdditiveInfo:
     # Optional honest status shown in place of evidence when there is no
     # verified source_url (e.g. "EFSA re-evaluation in progress").
     pending_note: str | None = None
+    # Functional category (colour, sweetener, preservative, emulsifier, acid,
+    # mineral, glazing, flavour, other) used to pick a card icon.
+    category: str = "other"
 
 
 @dataclass
@@ -56,6 +59,7 @@ class EvidenceCard:
     evidence_summary: str
     dose_context: str
     source_url: str | None
+    category: str = "other"
 
 
 @dataclass

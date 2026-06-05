@@ -1,4 +1,4 @@
-from app.additive_db import AdditiveDB
+from app.additive_db import AdditiveDB, infer_category
 from app.models import DimensionScore, EvidenceCard, NormalisedProduct, RiskLevel
 
 _RISK_ORDER = {RiskLevel.HIGH: 0, RiskLevel.MODERATE: 1, RiskLevel.LOW: 2, RiskLevel.UNKNOWN: 3}
@@ -21,6 +21,7 @@ class AdditiveScorer:
                     evidence_summary="This additive is not in our database.",
                     dose_context="",
                     source_url=None,
+                    category=infer_category(e_num),
                 ))
             elif info.source_url:
                 cards.append(EvidenceCard(
@@ -30,6 +31,7 @@ class AdditiveScorer:
                     evidence_summary=info.evidence_summary or "No detailed evidence summary available.",
                     dose_context=info.dose_context or "Dose/context data not available.",
                     source_url=info.source_url,
+                    category=info.category,
                 ))
             else:
                 # Known additive but no verified source: never present an
@@ -42,6 +44,7 @@ class AdditiveScorer:
                     evidence_summary=info.pending_note or "No detailed evidence summary available.",
                     dose_context="",
                     source_url=None,
+                    category=info.category,
                 ))
 
         cards.sort(key=lambda c: _RISK_ORDER[c.risk_level])

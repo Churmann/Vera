@@ -106,6 +106,27 @@ def test_product_page_overall_score_is_server_rendered():
 
 
 @respx.mock
+def test_product_page_shows_category_icon_and_risk_text():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "c", "nova_group": 4,
+            "additives_tags": ["en:e322-lecithins"],
+            "ingredients_text": "Sugar, palm oil", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    text = response.text
+    # An inline SVG icon is rendered for the additive...
+    assert "<svg" in text
+    assert "additive-icon" in text
+    assert 'data-category="emulsifier"' in text  # E322 lecithin
+    # ...and the textual risk label is kept (do not rely on colour alone).
+    assert "risk-chip" in text
+
+
+@respx.mock
 def test_product_not_found_returns_404():
     respx.get("https://world.openfoodfacts.org/api/v2/product/000.json").mock(
         return_value=httpx.Response(404, json={"status": 0})

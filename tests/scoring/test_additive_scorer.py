@@ -121,6 +121,20 @@ def test_curated_entry_with_source_shows_evidence(make_db, make_product):
     assert card.source_url == "https://example.com/e330"
 
 
+def test_evidence_card_carries_category(make_db, make_product):
+    taxonomy = [{"e_number": "e133", "name": "Brilliant Blue", "risk_level": "low"}]
+    scorer = AdditiveScorer(make_db(taxonomy=taxonomy))
+    card = scorer.score(make_product(additives=["e133"])).flags[0]
+    assert card.category == "colour"
+
+
+def test_unknown_additive_category_is_inferred(make_db, make_product):
+    # Not in DB, but a numbered colour should still get a category for its icon.
+    scorer = AdditiveScorer(make_db())
+    card = scorer.score(make_product(additives=["e129"])).flags[0]
+    assert card.category == "colour"
+
+
 def test_dimension_metadata(make_db, make_product):
     scorer = AdditiveScorer(make_db())
     result = scorer.score(make_product(additives=[]))
