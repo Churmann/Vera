@@ -11,6 +11,7 @@ from app.alternatives import find_better_alternatives
 from app.config import Settings
 from app.models import OFFError
 from app.off_client import OFFClient
+from app.presentation import group_factors
 from app.scoring.additive_scorer import AdditiveScorer
 from app.scoring.food_engine import FoodScoringEngine, uncapped_overall, weighted_overall, weighted_score
 
@@ -100,6 +101,7 @@ def create_app() -> FastAPI:
             "result": result,
             "overall_score": overall_score,
             "alternatives": alternatives,
+            "factors": group_factors(result),
         })
 
     return app

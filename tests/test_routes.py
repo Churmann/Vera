@@ -127,6 +127,78 @@ def test_product_page_shows_category_icon_and_risk_text():
 
 
 @respx.mock
+def test_product_page_groups_factors_into_negatives_and_positives():
+    # Nutella: Nutri-Score E (poor) + NOVA 4 (poor) + one low-risk additive (E322).
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": ["en:e322-lecithins"],
+            "ingredients_text": "Sugar, palm oil", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    # Scope to the breakdown section (dimension labels also appear in the
+    # weights panel above it).
+    factors = response.text[response.text.index('id="factors"'):]
+    # Both group headings are present as text labels (not colour alone).
+    assert "Negatives" in factors
+    assert "Positives" in factors
+    # Poor dimensions land in Negatives, ahead of the Positives heading.
+    neg = factors.index("Negatives")
+    pos = factors.index("Positives")
+    assert neg < factors.index("Nutritional Quality") < pos
+    assert neg < factors.index("Processing Level") < pos
+    # The low-risk additive (E322 lecithin) sits in the Positives group.
+    assert pos < factors.index("Lecithin")
+    # Each row exposes its detail behind an expandable control.
+    assert 'class="factor"' in factors
+    assert "factor-dot" in factors
+
+
+@respx.mock
+def test_product_page_caps_many_low_risk_additives_but_shows_all_negatives():
+    additives = [f"en:e{n}" for n in range(500, 512)]  # 12 unknown -> low-tail additives
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Additive Soup", "brands": "TestCo",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": additives,
+            "ingredients_text": "Everything", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    text = response.text
+    # The reassuring long tail is tucked behind a single disclosure...
+    assert "more low-risk additive" in text
+    # ...while the poor core dimensions (Negatives) are always shown in full.
+    assert "Nutritional Quality" in text
+    assert "Processing Level" in text
+
+
+@respx.mock
+def test_unnamed_additive_does_not_double_the_e_number():
+    """An unclassified additive (no name) should show its E-number once, not 'E338 (E338)'."""
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Mystery Drink", "brands": "TestCo",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": ["en:e338"],  # not in our DB -> name falls back to E338
+            "ingredients_text": "Water", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    text = response.text
+    # The label already is "E338"; the parenthesised enum span must be suppressed
+    # so the visible row reads "E338", not "E338 (E338)".
+    assert "(E338)" not in text
+    assert "E338" in text
+
+
+@respx.mock
 def test_product_page_shows_better_alternatives():
     # Current product: Nutella, E + NOVA 4 → capped low score.
     respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(

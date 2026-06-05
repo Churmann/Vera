@@ -12,9 +12,50 @@
   "mineral": '<path d="M12 3l8 7-8 11L4 10l8-7z"/><path d="M4 10h16"/>',
   "glazing": '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/>',
   "flavour": '<circle cx="12" cy="12" r="3"/><path d="M12 4v2"/><path d="M12 18v2"/><path d="M4 12h2"/><path d="M18 12h2"/><path d="M6.3 6.3l1.4 1.4"/><path d="M16.3 16.3l1.4 1.4"/><path d="M17.7 6.3l-1.4 1.4"/><path d="M7.7 16.3l-1.4 1.4"/>',
-  "other": '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/>'
+  "other": '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/>',
+  "nutrition": '<path d="M12 7c0-2.2 1.8-4 4-4 0 2.2-1.8 4-4 4z"/><path d="M12 21c-3.5 0-6-3.5-6-8 0-3 2-5 4.5-5 .9 0 1.5.3 1.5.3s.6-.3 1.5-.3C16 8 18 10 18 13c0 4.5-2.5 8-6 8z"/>',
+  "processing": '<path d="M3 21V11l5 3V11l5 3V8l5 3v9z"/><path d="M3 21h18"/><path d="M9.5 21v-3"/><path d="M14 21v-3"/>'
 } -%}
 <svg class="additive-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ svg.get(cat, svg["other"]) | safe }}</svg>
+{%- endmacro %}
+
+{#- One Negatives/Positives row: icon · label · value · muted dot · expand chevron. -#}
+{% macro factor_row(row) -%}
+<details class="factor">
+  <summary class="factor-summary">
+    <span class="additive-icon additive-icon--{{ row.tone }}"
+          data-category="{{ row.icon_category }}"
+          title="{{ row.icon_category | title }} · {{ row.tone_label }}">
+      {{ category_icon(row.icon_category) }}
+    </span>
+    <span class="factor-label">
+      {{ row.label }}{% if row.e_number and (row.e_number | upper) != (row.label | upper) %} <span class="additive-enum">({{ row.e_number | upper }})</span>{% endif %}
+    </span>
+    {% if row.kind == "additive" %}
+    <span class="risk-chip risk-chip--{{ row.tone }}">{{ row.risk_label }}</span>
+    {% else %}
+    <span class="factor-value">{{ row.value_text }}</span>
+    {% endif %}
+    <span class="factor-dot factor-dot--{{ row.tone }}" aria-hidden="true"></span>
+    <span class="visually-hidden">{{ row.tone_label }}</span>
+    <span class="factor-chevron" aria-hidden="true">⌄</span>
+  </summary>
+  <div class="factor-body">
+    {% if row.kind == "dimension" %}
+    <p class="factor-derivation">{{ row.derivation }}</p>
+    <p class="factor-text">{{ row.summary }}</p>
+    {% if row.positives %}
+    <ul class="factor-positives">{% for pos in row.positives %}<li>{{ pos }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% else %}
+    <p class="factor-text"><strong>Evidence:</strong> {{ row.evidence_summary }}</p>
+    {% if row.dose_context %}<p class="factor-text"><strong>Dose/context:</strong> {{ row.dose_context }}</p>{% endif %}
+    {% if row.source_url %}
+    <a href="{{ row.source_url }}" target="_blank" rel="noopener" class="source-link">Source ↗</a>
+    {% endif %}
+    {% endif %}
+  </div>
+</details>
 {%- endmacro %}
 
 {% block content %}
@@ -110,51 +151,43 @@
   </details>
 </section>
 
-<section class="dimensions" id="dimensions">
-  {% for dim in result.dimensions %}
-  <div class="dimension-card dimension-card--{{ dim.id }}" id="dim-card-{{ dim.id }}"
-       data-score="{{ dim.score }}" data-weight="{{ dim.weight_default }}">
-    <div class="dimension-header">
-      <div class="dimension-title">
-        <h3>{{ dim.label }}</h3>
-        <span class="dimension-derivation">{{ dim.input_label }} → {{ dim.input_value }}/100</span>
-      </div>
-      <div class="dimension-score-badge">{{ dim.score }}</div>
+<section class="factors" id="factors" aria-label="Score breakdown">
+  <div class="factor-group factor-group--negatives">
+    <h2 class="factor-group-title">
+      <span class="factor-group-dot factor-group-dot--negative" aria-hidden="true"></span>
+      Negatives
+      <span class="factor-group-count">{{ factors.negatives | length }}</span>
+    </h2>
+    {% if factors.negatives %}
+    <div class="factor-list">
+      {% for row in factors.negatives %}{{ factor_row(row) }}{% endfor %}
     </div>
-    <p class="dimension-summary">{{ dim.summary }}</p>
-    {% if dim.positives %}
-    <div class="dimension-positives">
-      <h4>Positives</h4>
-      <ul>{% for pos in dim.positives %}<li>{{ pos }}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-    {% if dim.flags %}
-    <div class="dimension-flags">
-      <h4>Flags</h4>
-      {% for flag in dim.flags %}
-      <details class="evidence-card evidence-card--{{ flag.risk_level.value }}">
-        <summary>
-          <span class="additive-icon additive-icon--{{ flag.risk_level.value }}"
-                data-category="{{ flag.category }}"
-                title="{{ flag.category | title }} · {{ flag.risk_level.value | title }} risk">
-            {{ category_icon(flag.category) }}
-          </span>
-          <span class="additive-name">{{ flag.name }}</span>
-          <span class="additive-enum">({{ flag.e_number | upper }})</span>
-          <span class="risk-chip risk-chip--{{ flag.risk_level.value }}">{{ flag.risk_level.value | title }}</span>
-        </summary>
-        <div class="evidence-body">
-          <p><strong>Evidence:</strong> {{ flag.evidence_summary }}</p>
-          <p><strong>Dose/context:</strong> {{ flag.dose_context }}</p>
-          {% if flag.source_url %}
-          <a href="{{ flag.source_url }}" target="_blank" rel="noopener" class="source-link">Source ↗</a>
-          {% endif %}
-        </div>
-      </details>
-      {% endfor %}
-    </div>
+    {% else %}
+    <p class="factor-empty">Nothing scoring poorly — this product holds up well across the board.</p>
     {% endif %}
   </div>
-  {% endfor %}
+
+  <div class="factor-group factor-group--positives">
+    <h2 class="factor-group-title">
+      <span class="factor-group-dot factor-group-dot--positive" aria-hidden="true"></span>
+      Positives
+      <span class="factor-group-count">{{ (factors.positives | length) + (factors.hidden_positives | length) }}</span>
+    </h2>
+    {% if factors.positives or factors.hidden_positives %}
+    <div class="factor-list">
+      {% for row in factors.positives %}{{ factor_row(row) }}{% endfor %}
+      {% if factors.hidden_positives %}
+      <details class="factor-more">
+        <summary class="factor-more-summary">Show {{ factors.hidden_positives | length }} more low-risk additive{{ 's' if factors.hidden_positives | length != 1 else '' }}</summary>
+        <div class="factor-list">
+          {% for row in factors.hidden_positives %}{{ factor_row(row) }}{% endfor %}
+        </div>
+      </details>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="factor-empty">No standout positives for this product.</p>
+    {% endif %}
+  </div>
 </section>
 {% endblock %}

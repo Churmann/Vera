@@ -47,18 +47,27 @@ Additives dimension still appears in the weights panel (30%) and cap logic.
 | dimension score | ≥ 70 | 40–69 | < 40 | — |
 | additive risk | Low | Moderate | High | Unknown |
 
-- **Positives** = band `good` (score ≥ 70 / risk Low).
-- **Negatives** = band `moderate`, `poor`, or `unknown` (mixed/poor → Negatives,
-  matching Yuka). Unavailable data (score 50) and unclassified additives land in
-  Negatives as honest mild concerns.
+- **Negatives** = only the *flagged* factors: dimensions scoring below 70
+  (mixed/poor → Negatives, matching Yuka) and **moderate- or high-risk**
+  additives. Unavailable dimension data (score 50) sits here as an honest mild
+  concern.
+- **Positives** = good dimensions (score ≥ 70) plus **low-risk additives** and
+  **unclassified (unknown-risk) additives** — the latter are not flagged as
+  risky, so they belong with the non-flagged tail. They keep a slate dot and an
+  honest "Unknown risk" label; they are never dressed up as "Low".
 
 ### Display rules
 
-- **Negatives are never capped** — all flagged negatives are always shown.
-- **Positives show the first ~5**, with the remainder behind a "Show N more"
-  disclosure (`<details>`), so a product with many low-risk additives stays tidy.
+- **Negatives are never capped** — every flagged negative is always shown.
+- **Positive additives show the first ~5**, with the remainder behind a
+  "Show N more low-risk additives" disclosure (`<details>`), so a product with
+  many harmless additives stays tidy. Dimension rows are never hidden.
 - Within a group, dimension rows come before additive rows; additives keep their
   existing risk-sorted order.
+- When a product has **no additives**, the Additives dimension's "No additives
+  detected" content survives as a single positive summary row. When low-risk
+  additives are present, the individual rows convey the reassurance, so the
+  redundant blanket "no high/moderate-risk additives" statement is not repeated.
 
 ### Accessibility & palette
 
@@ -70,25 +79,31 @@ Additives dimension still appears in the weights panel (30%) and cap logic.
 
 ## Components / files
 
-- **`app/factors.py`** (new) — pure, testable `build_factor_groups(result)
-  -> FactorGroups(negatives, positives)`; `Factor` dataclass; band helpers.
+- **`app/presentation.py`** (new) — pure, testable `group_factors(result)
+  -> GroupedFactors(negatives, positives, hidden_positives)`; flat `FactorRow`
+  dataclass carrying both the collapsed-row fields and the expandable detail.
   No I/O, no template logic.
-- **`app/main.py`** — compute `factors` in the product route, pass to template.
-- **`templates/product.html`** — replace `.dimensions` with `.factors` (two
-  groups, empty states, positives disclosure); add a `dimension_icon` macro
-  (nutrition = heart, processing = gear) in the existing inline-SVG style; reuse
-  `category_icon` for additives.
-- **`static/css/style.css`** — replace `.dimension-card*` rules with
-  `.factors` / `.factor-group` / `.factor-row` / `.factor-dot`; keep
-  `.evidence-body`, `.risk-chip`, `.additive-icon` (reused in row detail).
-- **Tests** — new `tests/test_factors.py` (banding, grouping, statement & empty
-  cases, positives cap, negatives never capped); extend `tests/test_routes.py`
-  with a Negatives/Positives grouping + accessibility assertion. Existing icon /
-  risk-chip / weights tests stay green.
+- **`app/main.py`** — compute `factors = group_factors(result)` in the product
+  route and pass it to the template.
+- **`templates/product.html`** — replace the `.dimension-card` loop with the
+  `#factors` Negatives/Positives section and a `factor_row` macro; add
+  `nutrition` (heart) and `processing` (factory) icons to the existing
+  `category_icon` macro; reuse it for additives. The enum suffix `(E…)` is
+  suppressed when it would merely repeat an unnamed additive's label.
+- **`static/css/style.css`** — remove the dead `.dimension-*` / `.evidence-card`
+  rules; add `.factor*` styles (rows, muted dots, chevron, group headings,
+  "show more" disclosure, `.visually-hidden`); keep the reused `.additive-icon`,
+  `.risk-chip`, `.source-link`.
+- **Tests** — new `tests/test_presentation.py` (thresholds, risk split,
+  evidence/dose/source carried, no-additives summary survives, positives cap with
+  remainder hidden, negatives never hidden, tone words); extend
+  `tests/test_routes.py` with grouping order, the many-additives cap, and the
+  unnamed-additive enum de-duplication. Existing icon / risk-chip / weights tests
+  stay green.
 
 ## Testing strategy
 
-Unit-test the pure `build_factor_groups` against constructed `ScoreResult`s
+Unit-test the pure `group_factors` against constructed `ScoreResult`s
 (no network). Route tests use the existing `respx` mocks. Verify rendered HTML
 contains both group headings, the dimension grade values, additive rows with
 category icon + risk chip, and the visually-hidden band labels.
