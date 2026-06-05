@@ -43,6 +43,13 @@ def weighted_overall(result: ScoreResult) -> int:
     return weighted_score(result.dimensions, result.score_cap)
 
 
+def uncapped_overall(result: ScoreResult) -> int:
+    """The weighted score ignoring the cap — used to compare products of similar
+    processing level (e.g. ranking alternatives), where the cap would otherwise
+    flatten a whole category to the same number."""
+    return weighted_score(result.dimensions, None)
+
+
 def _confidence(product: NormalisedProduct) -> tuple[ConfidenceLevel, list[str]]:
     notes: list[str] = []
     if product.nutriscore_grade is None:

@@ -28,10 +28,10 @@ def client():
     return OFFClient(Settings(off_user_agent="TestApp/1.0", off_request_timeout=5.0, off_cache_ttl=300))
 
 
-def _current(categories, off_id="cur"):
+def _current(categories, off_id="cur", nutri="C", nova=2):
     return NormalisedProduct(
         off_id=off_id, name="Current", brand="B",
-        nutriscore_grade="C", nova_group=2, additives=[],
+        nutriscore_grade=nutri, nova_group=nova, additives=[],
         ingredients_text=None, image_url=None,
         raw_off_url="https://world.openfoodfacts.org/product/cur/",
         categories=categories,
@@ -108,6 +108,70 @@ async def test_failing_candidate_fetch_does_not_break_batch(engine, client):
     alts = await find_better_alternatives(client, engine, _current(["en:chocolate-spreads"]), current_score=70)
     await client.aclose()
     assert [a.off_id for a in alts] == ["good", "good2"]
+
+
+@respx.mock
+async def test_ranks_on_uncapped_score_so_cap_does_not_flatten(engine, client):
+    """Regression: a NOVA-4 product's category neighbours are all NOVA-4 too, so the
+    cap pins every displayed score to 35 — a 35-way tie that returned nothing.
+    Ranking must use the uncapped underlying score so gradation survives, while the
+    *displayed* score stays capped."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        {"code": "cbet"}, {"code": "dbet"}, {"code": "etie"},
+    ]}))
+    _mock_product("cbet", "c", 4)  # capped 35, uncapped 60  (better)
+    _mock_product("dbet", "d", 4)  # capped 35, uncapped 50  (better)
+    _mock_product("etie", "e", 4)  # capped 35, uncapped 40  (ties current — excluded)
+    # Current product E/NOVA4: capped 35, uncapped 40.
+    alts = await find_better_alternatives(client, engine, _current(["en:chocolate-spreads"]), current_score=40)
+    await client.aclose()
+    # Both better neighbours surface, ordered by the uncapped score (60 before 50)...
+    assert [a.off_id for a in alts] == ["cbet", "dbet"]
+    # ...but the score shown to the user is still the capped 35.
+    assert [a.score for a in alts] == [35, 35]
+
+
+@respx.mock
+async def test_excludes_candidates_missing_nova_or_nutrition(engine, client):
+    """A candidate missing NOVA or Nutri-Score data must not be recommended — it only
+    looks good because there's no data to penalise it."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        {"code": "nonova"}, {"code": "nonutri"}, {"code": "good"},
+    ]}))
+    # Missing NOVA (nutri present).
+    respx.get(PRODUCT_URL.format(code="nonova")).mock(return_value=httpx.Response(200, json={"product": {
+        "product_name": "No NOVA", "brands": "X", "nutriscore_grade": "a",
+        "additives_tags": [], "image_url": None, "categories_tags": ["en:chocolate-spreads"]}}))
+    # Missing Nutri-Score (nova present).
+    respx.get(PRODUCT_URL.format(code="nonutri")).mock(return_value=httpx.Response(200, json={"product": {
+        "product_name": "No Nutri", "brands": "X", "nova_group": 1,
+        "additives_tags": [], "image_url": None, "categories_tags": ["en:chocolate-spreads"]}}))
+    _mock_product("good", "a", 1)  # complete data, score 100
+    alts = await find_better_alternatives(client, engine, _current(["en:chocolate-spreads"]), current_score=50)
+    await client.aclose()
+    assert [a.off_id for a in alts] == ["good"]
+
+
+@respx.mock
+async def test_reason_reports_improved_nutrition(engine, client):
+    """Only nutrition differs → the card explains the nutrition improvement."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [{"code": "c1"}]}))
+    _mock_product("c1", "c", 2)  # better Nutri-Score, same processing
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:x"], nutri="E", nova=2), current_score=0)
+    await client.aclose()
+    assert alts[0].reason == "Better nutrition (Nutri-Score C vs E)"
+
+
+@respx.mock
+async def test_reason_reports_less_processed(engine, client):
+    """Only processing differs → the card explains the processing improvement."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [{"code": "c1"}]}))
+    _mock_product("c1", "c", 2)  # same Nutri-Score, less processed
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:x"], nutri="C", nova=4), current_score=0)
+    await client.aclose()
+    assert alts[0].reason == "Less processed (NOVA 2 vs 4)"
 
 
 @respx.mock

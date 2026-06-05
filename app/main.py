@@ -12,7 +12,7 @@ from app.config import Settings
 from app.models import OFFError
 from app.off_client import OFFClient
 from app.scoring.additive_scorer import AdditiveScorer
-from app.scoring.food_engine import FoodScoringEngine, weighted_overall, weighted_score
+from app.scoring.food_engine import FoodScoringEngine, uncapped_overall, weighted_overall, weighted_score
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -83,12 +83,14 @@ def create_app() -> FastAPI:
         overall_score = weighted_overall(result)
 
         # A failing alternatives lookup must never break the score page.
+        # Compare on the uncapped score so the cap doesn't flatten a whole
+        # category to the same number (the displayed cards still show capped scores).
         try:
             alternatives = await find_better_alternatives(
                 request.app.state.off_client,
                 request.app.state.scoring_engine,
                 product,
-                overall_score,
+                uncapped_overall(result),
             )
         except OFFError:
             alternatives = []

@@ -55,7 +55,7 @@
 <section class="alternatives">
   <h2>Better alternatives</h2>
   {% if alternatives %}
-  <p class="alternatives-note">Higher-scoring products in the same category.</p>
+  <p class="alternatives-note">Better picks in the same category, ranked by underlying quality. Each shows its own honest score.</p>
   <ul class="alt-grid">
     {% for alt in alternatives %}
     <li class="alt-card">
@@ -70,6 +70,7 @@
         <span class="alt-info">
           <span class="alt-name">{{ alt.name }}</span>
           {% if alt.brand %}<span class="alt-brand">{{ alt.brand }}</span>{% endif %}
+          <span class="alt-reason">{{ alt.reason }}</span>
         </span>
         <span class="alt-score">
           <span class="alt-score-dot alt-score-dot--{{ alt.band }}" aria-hidden="true"></span>

@@ -162,6 +162,9 @@ def test_product_page_shows_better_alternatives():
     assert "/product/alt1" in text
     # Higher-scoring alternative shown first.
     assert text.index("Healthy Spread") < text.index("Better Spread")
+    # Each card carries an honest reason it's a better pick.
+    assert "alt-reason" in text
+    assert "vs E" in text  # current product is Nutri-Score E
 
 
 @respx.mock
