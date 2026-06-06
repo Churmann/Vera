@@ -9,6 +9,12 @@
 <body>
   <header class="site-header">
     <a href="/" class="logo">Vera</a>
+    {% set path = request.url.path %}
+    <nav class="site-nav" aria-label="Primary">
+      <a href="/" class="site-nav-link{% if path == '/' or path.startswith('/search') %} is-active{% endif %}">Search</a>
+      <a href="/history" class="site-nav-link{% if path.startswith('/history') %} is-active{% endif %}">History</a>
+      <a href="/overview" class="site-nav-link{% if path.startswith('/overview') %} is-active{% endif %}">Overview</a>
+    </nav>
   </header>
   <main class="container">
     {% block content %}{% endblock %}

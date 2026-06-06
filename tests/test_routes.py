@@ -294,3 +294,58 @@ def test_product_not_found_returns_404():
     with TestClient(app) as client:
         response = client.get("/product/000")
     assert response.status_code == 404
+
+
+def test_nav_present_across_pages():
+    with TestClient(app) as client:
+        for path in ("/", "/history", "/overview"):
+            text = client.get(path).text
+            assert 'href="/history"' in text
+            assert 'href="/overview"' in text
+            assert "site-nav" in text
+
+
+def test_history_page_scaffolding():
+    with TestClient(app) as client:
+        response = client.get("/history")
+    text = response.text
+    assert response.status_code == 200
+    assert "<h1>History</h1>" in text
+    # Empty-state and management controls are server-rendered (JS toggles them).
+    assert 'id="history-empty"' in text
+    assert 'id="history-clear"' in text
+    assert 'id="history-list"' in text
+    assert "/static/js/history.js" in text
+
+
+def test_overview_page_scaffolding():
+    with TestClient(app) as client:
+        response = client.get("/overview")
+    text = response.text
+    assert response.status_code == 200
+    assert "<h1>Overview</h1>" in text
+    assert 'id="overview-empty"' in text
+    assert 'id="overview-chart"' in text
+    assert "/static/js/history.js" in text
+
+
+@respx.mock
+def test_product_page_emits_history_record_without_forbidden_strings():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": ["en:e322-lecithins"],
+            "ingredients_text": "Sugar, palm oil", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    text = response.text
+    # The hidden recorder carries the data history.js needs...
+    assert 'id="history-record"' in text
+    assert 'data-product-id="3017620422003"' in text
+    assert 'data-band=' in text
+    # ...while still not reintroducing the forbidden client-scoring strings.
+    assert "score-data" not in text
+    assert "scorer.js" not in text

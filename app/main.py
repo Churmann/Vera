@@ -47,6 +47,14 @@ def create_app() -> FastAPI:
     async def search_page(request: Request):
         return templates.TemplateResponse(request, "search.html")
 
+    @app.get("/history", response_class=HTMLResponse)
+    async def history_page(request: Request):
+        return templates.TemplateResponse(request, "history.html")
+
+    @app.get("/overview", response_class=HTMLResponse)
+    async def overview_page(request: Request):
+        return templates.TemplateResponse(request, "overview.html")
+
     @app.get("/search", response_class=HTMLResponse)
     async def search_results(request: Request, q: str = ""):
         if not q.strip():

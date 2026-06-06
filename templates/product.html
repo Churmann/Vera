@@ -59,6 +59,13 @@
 {%- endmacro %}
 
 {% block content %}
+<div id="history-record" hidden
+     data-product-id="{{ product.off_id }}"
+     data-name="{{ product.name }}"
+     data-brand="{{ product.brand or '' }}"
+     data-image="{{ product.image_url or '' }}"
+     data-score="{{ overall_score }}"
+     data-band="{% if overall_score >= 70 %}good{% elif overall_score >= 40 %}mixed{% else %}poor{% endif %}"></div>
 <div class="product-header">
   {% if product.image_url %}
   <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-hero-img">
@@ -190,4 +197,7 @@
     {% endif %}
   </div>
 </section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/js/history.js"></script>
 {% endblock %}

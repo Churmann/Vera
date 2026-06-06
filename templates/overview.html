@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Overview — Vera{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Overview</h1>
+</div>
+<p class="page-intro">A summary of the products you've viewed, by grade. Based only on this browser's history.</p>
+
+<p id="overview-empty" class="history-empty" hidden>
+  Nothing to summarise yet. <a href="/">Search for a product</a> to start building your overview.
+</p>
+<p id="overview-unavailable" class="history-empty" hidden>
+  History isn't available in this browser context, so there's nothing to summarise here.
+</p>
+
+<section id="overview-chart" class="overview-chart" hidden aria-label="Scan history by grade"></section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/js/history.js"></script>
+{% endblock %}
