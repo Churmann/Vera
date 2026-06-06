@@ -18,6 +18,47 @@ def test_search_page_returns_200():
     assert response.status_code == 200
 
 
+def test_search_page_links_to_scan():
+    # The search hero offers a Scan barcode shortcut.
+    with TestClient(app) as client:
+        response = client.get("/")
+    assert 'href="/scan"' in response.text
+    assert "Scan barcode" in response.text
+
+
+def test_nav_includes_scan_link_on_every_page():
+    # The Scan entry point lives in the shared header nav.
+    with TestClient(app) as client:
+        response = client.get("/")
+    assert '<a href="/scan"' in response.text
+
+
+def test_scan_page_returns_200_with_camera_wiring():
+    with TestClient(app) as client:
+        response = client.get("/scan")
+    assert response.status_code == 200
+    body = response.text
+    # The camera viewport, the ZXing library (SRI-pinned), and the scan module.
+    assert 'id="scan-video"' in body
+    assert "zxing-browser.min.js" in body
+    assert "integrity=" in body
+    assert "/static/js/scan.js" in body
+
+
+def test_scan_page_offers_manual_fallback():
+    # Every failure mode (no camera, denied, etc.) can fall back to typing.
+    with TestClient(app) as client:
+        response = client.get("/scan")
+    assert 'id="scan-manual-form"' in response.text
+    assert 'id="scan-manual-input"' in response.text
+
+
+def test_scan_nav_link_is_active_on_scan_page():
+    with TestClient(app) as client:
+        response = client.get("/scan")
+    assert 'href="/scan" class="site-nav-link is-active"' in response.text
+
+
 def test_empty_search_shows_error():
     with TestClient(app) as client:
         response = client.get("/search?q=")

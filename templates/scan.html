@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Scan a barcode — Vera{% endblock %}
+{% block content %}
+<section id="scan" class="scan">
+  <div class="page-head">
+    <h1>Scan a barcode</h1>
+    <a href="/" class="back-link">← Search instead</a>
+  </div>
+  <p class="page-intro">
+    Point your camera at a product's barcode. We'll look it up and score it
+    automatically. Nothing is uploaded — scanning happens in your browser.
+  </p>
+
+  <div id="scan-viewport" class="scan-viewport">
+    <video id="scan-video" class="scan-video" muted autoplay playsinline></video>
+    <div class="scan-reticle" aria-hidden="true"></div>
+  </div>
+  <p id="scan-status" class="scan-status" role="status" aria-live="polite"></p>
+  <p id="scan-error" class="form-error scan-error" role="alert" hidden></p>
+
+  <form id="scan-manual-form" class="scan-manual">
+    <label for="scan-manual-input">Or type the barcode</label>
+    <div class="scan-manual-row">
+      <input id="scan-manual-input" name="barcode" type="text"
+             inputmode="numeric" autocomplete="off"
+             placeholder="e.g. 3017620422003">
+      <button type="submit">Look up</button>
+    </div>
+    <p id="scan-manual-error" class="form-error" hidden>
+      That doesn't look like a valid product barcode (8–14 digits).
+    </p>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script
+  src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/zxing-browser.min.js"
+  integrity="sha384-ylLhng89kD62+PVK1cjm4rAYg69zDlGrbbSfAE2Eb8Xqf8RoAQCMcRoUXZh7pAPC"
+  crossorigin="anonymous"
+  onerror="window.__zxingLoadFailed = true;"></script>
+<script type="module" src="/static/js/scan.js"></script>
+{% endblock %}

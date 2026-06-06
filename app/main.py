@@ -47,6 +47,10 @@ def create_app() -> FastAPI:
     async def search_page(request: Request):
         return templates.TemplateResponse(request, "search.html")
 
+    @app.get("/scan", response_class=HTMLResponse)
+    async def scan_page(request: Request):
+        return templates.TemplateResponse(request, "scan.html")
+
     @app.get("/history", response_class=HTMLResponse)
     async def history_page(request: Request):
         return templates.TemplateResponse(request, "history.html")

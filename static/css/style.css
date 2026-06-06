@@ -96,6 +96,59 @@ a { color: inherit; }
 .search-form button:hover { opacity: .88; }
 .form-error { color: var(--color-poor); margin-top: .75rem; font-size: .9rem; }
 
+/* "or Scan barcode" affordance on the search hero */
+.search-or { color: var(--color-text-muted); font-size: .85rem; margin: 1.25rem 0 .5rem; }
+.scan-cta {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .6rem 1.25rem; border-radius: 999px;
+  background: var(--color-accent-light); color: var(--color-accent);
+  font-weight: 600; font-size: .95rem; text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.scan-cta:hover { background: var(--color-accent); color: #fff; }
+
+/* Scan page */
+.scan { max-width: 480px; margin: 0 auto; }
+.scan-viewport {
+  position: relative; margin: 1.5rem 0 1rem;
+  background: #1a1a2e; border: 1px solid var(--color-border);
+  border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3;
+}
+.scan-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* A calm framing guide — not an alarming target. */
+.scan-reticle {
+  position: absolute; inset: 18% 12%;
+  border: 2px solid rgba(255, 255, 255, .85);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 100vmax rgba(26, 26, 46, .35);
+  pointer-events: none;
+}
+.scan-status {
+  text-align: center; color: var(--color-text-muted);
+  font-size: .9rem; min-height: 1.4em; margin-bottom: 1rem;
+}
+.scan-error { text-align: center; margin: 0 0 1.5rem; }
+
+.scan-manual { border-top: 1px solid var(--color-border); padding-top: 1.25rem; }
+.scan-manual label {
+  display: block; font-size: .85rem; font-weight: 600;
+  color: var(--color-text-muted); margin-bottom: .5rem;
+}
+.scan-manual-row { display: flex; gap: .5rem; }
+.scan-manual-row input {
+  flex: 1; padding: .7rem 1rem;
+  border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  font-size: 1rem; font-family: var(--font); outline: none;
+  transition: border-color .15s;
+}
+.scan-manual-row input:focus { border-color: var(--color-accent); }
+.scan-manual-row button {
+  padding: .7rem 1.25rem; background: var(--color-accent); color: #fff;
+  border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600;
+  cursor: pointer; transition: opacity .15s;
+}
+.scan-manual-row button:hover { opacity: .88; }
+
 /* Results */
 .results-header { margin-bottom: 1.5rem; }
 .results-header h2 { font-size: 1.35rem; margin-top: .3rem; }
