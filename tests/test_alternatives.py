@@ -44,12 +44,17 @@ def _hit(code, grade=None, nova=None):
     return {"code": code, "nutriscore_grade": grade, "nova_group": nova}
 
 
-def _mock_product(code, grade, nova):
-    """Register a candidate product. Grade/nova map to a known overall score."""
+def _mock_product(code, grade, nova, cats=("en:chocolate-spreads",)):
+    """Register a candidate product. Grade/nova map to a known overall score.
+
+    ``cats`` are the candidate's category tags — by default the same specific
+    category most tests' current product carries, so the same-kind filter keeps
+    it (a candidate found under a category genuinely belongs to it)."""
     respx.get(PRODUCT_URL.format(code=code)).mock(return_value=httpx.Response(200, json={"product": {
         "product_name": f"Product {code}", "brands": "Brand",
         "nutriscore_grade": grade, "nova_group": nova,
         "additives_tags": [], "image_url": f"http://img/{code}.jpg",
+        "categories_tags": list(cats),
     }}))
 
 
@@ -172,7 +177,7 @@ async def test_prefilters_unbeatable_candidates_without_fetching(engine, client)
         return_value=httpx.Response(200, json={"product": {
             "product_name": "Poor", "nutriscore_grade": "e", "nova_group": 4,
             "additives_tags": [], "categories_tags": ["en:x"]}}))
-    alts = await find_better_alternatives(client, engine, _current(["en:x"]), current_score=50)
+    alts = await find_better_alternatives(client, engine, _current(["en:chocolate-spreads"]), current_score=50)
     await client.aclose()
     assert [a.off_id for a in alts] == ["good"]
     assert poor_route.call_count == 0
@@ -184,7 +189,7 @@ async def test_reason_reports_improved_nutrition(engine, client):
     respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [_hit("c1", "c", 2)]}))
     _mock_product("c1", "c", 2)  # better Nutri-Score, same processing
     alts = await find_better_alternatives(
-        client, engine, _current(["en:x"], nutri="E", nova=2), current_score=0)
+        client, engine, _current(["en:chocolate-spreads"], nutri="E", nova=2), current_score=0)
     await client.aclose()
     assert alts[0].reason == "Better nutrition (Nutri-Score C vs E)"
 
@@ -195,7 +200,7 @@ async def test_reason_reports_less_processed(engine, client):
     respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [_hit("c1", "c", 2)]}))
     _mock_product("c1", "c", 2)  # same Nutri-Score, less processed
     alts = await find_better_alternatives(
-        client, engine, _current(["en:x"], nutri="C", nova=4), current_score=0)
+        client, engine, _current(["en:chocolate-spreads"], nutri="C", nova=4), current_score=0)
     await client.aclose()
     assert alts[0].reason == "Less processed (NOVA 2 vs 4)"
 
@@ -210,7 +215,7 @@ async def test_equal_scoring_alternatives_ordered_deterministically(engine, clie
     _mock_product("zzz", "a", 1)  # 100
     _mock_product("aaa", "a", 1)  # 100 — tie
     _mock_product("mmm", "a", 1)  # 100 — tie
-    alts = await find_better_alternatives(client, engine, _current(["en:x"]), current_score=50)
+    alts = await find_better_alternatives(client, engine, _current(["en:chocolate-spreads"]), current_score=50)
     await client.aclose()
     assert [a.off_id for a in alts] == ["aaa", "mmm", "zzz"]
 
@@ -230,12 +235,13 @@ def test_ordered_category_tags_most_specific_first():
         "fr:pates-a-tartiner", "en:chocolate-spreads",
         "en:cocoa-and-hazelnuts-spreads",
     ]
+    # en:breakfasts is a cross-kind grouping (cereals + spreads + pastries), so it's
+    # dropped; the specific spread tags remain, most-specific first.
     assert _ordered_category_tags(cats) == [
         "en:cocoa-and-hazelnuts-spreads",
         "en:chocolate-spreads",
         "en:sweet-spreads",
         "en:spreads",
-        "en:breakfasts",
     ]
 
 
@@ -286,7 +292,7 @@ async def test_never_broadens_into_generic_category(engine, client):
         return httpx.Response(200, json={"hits": [_hit("j1", "a", 1), _hit("j2", "a", 1)]})  # junk
 
     respx.get(SEARCH_URL).mock(side_effect=handler)
-    _mock_product("c1", "a", 1)
+    _mock_product("c1", "a", 1, cats=["en:colas"])
     _mock_product("j1", "a", 1)
     _mock_product("j2", "a", 1)
     alts = await find_better_alternatives(
@@ -294,6 +300,55 @@ async def test_never_broadens_into_generic_category(engine, client):
     await client.aclose()
     assert [a.off_id for a in alts] == ["c1"]
     assert not any("beverages" in q for q in searched)
+
+
+@respx.mock
+async def test_excludes_better_candidate_of_a_different_kind(engine, client):
+    """A higher-scoring product that shares only a broad grouping (e.g. en:sweet-snacks)
+    and NOT a specific category must be rejected. This is the gum-vs-biscuits bug:
+    a biscuit is not a valid alternative to chewing gum just because both are 'snacks'."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        _hit("gum2", "a", 1), _hit("biscuit", "a", 1),
+    ]}))
+    _mock_product("gum2", "a", 1, cats=["en:chewing-gum", "en:sweet-snacks"])       # same kind
+    _mock_product("biscuit", "a", 1, cats=["en:biscuits", "en:sweet-snacks"])       # different kind
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:chewing-gum", "en:sweet-snacks"]), current_score=50)
+    await client.aclose()
+    assert [a.off_id for a in alts] == ["gum2"]
+
+
+@respx.mock
+async def test_niche_category_with_no_same_kind_options_returns_empty(engine, client):
+    """The honest empty state: when the only better products are a different kind,
+    show nothing rather than broadening into unrelated foods."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        _hit("biscuit", "a", 1), _hit("chocolate", "a", 1),
+    ]}))
+    _mock_product("biscuit", "a", 1, cats=["en:biscuits", "en:sweet-snacks"])
+    _mock_product("chocolate", "a", 1, cats=["en:dark-chocolates", "en:confectioneries"])
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:chewing-gum", "en:confectioneries"]), current_score=50)
+    await client.aclose()
+    assert alts == []
+
+
+@respx.mock
+async def test_only_generic_categories_returns_empty_without_searching(engine, client):
+    """If a product carries nothing more specific than grouping tags, there's no way to
+    find the same kind — return empty and don't even search."""
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": []}))
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:snacks", "en:sweet-snacks", "en:confectioneries"]), current_score=50)
+    await client.aclose()
+    assert alts == []
+    assert route.call_count == 0
+
+
+def test_ordered_category_tags_drops_snack_and_confectionery_groupings():
+    """The grouping tags that mixed gum with biscuits/chocolate must never be searched."""
+    cats = ["en:snacks", "en:sweet-snacks", "en:confectioneries", "en:chewing-gum"]
+    assert _ordered_category_tags(cats) == ["en:chewing-gum"]
 
 
 async def test_fetch_many_limits_concurrency():
@@ -330,8 +385,9 @@ def test_ordered_category_tags_drops_malformed_non_canonical_tags():
         "en:Produits à tartiner", "en:Produits à tartiner sucrés",
         "en:Pâtes à tartiner",
     ]
+    # (en:breakfasts is also dropped now as a cross-kind grouping.)
     assert _ordered_category_tags(cats) == [
-        "en:confectionary-based-spreads", "en:sweet-spreads", "en:spreads", "en:breakfasts"]
+        "en:confectionary-based-spreads", "en:sweet-spreads", "en:spreads"]
 
 
 def test_ordered_category_tags_ignores_non_english_tags():

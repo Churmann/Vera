@@ -115,6 +115,14 @@ async def find_better_alternatives(
     if not tags:
         return []
 
+    # Every alternative must be genuinely the same KIND of product: it has to
+    # share at least one specific category with the current product, not merely a
+    # broad grouping like "snacks" or "confectioneries". If the current product
+    # has no specific category at all, we can't establish kinship — return empty.
+    current_specific = _specific_tags(product.categories)
+    if not current_specific:
+        return []
+
     current_dims = engine.score(product).dimensions
 
     best: list[Alternative] = []
@@ -141,6 +149,8 @@ async def find_better_alternatives(
         for p in await _fetch_many(off_client, to_fetch):
             if p.nova_group is None or p.nutriscore_grade is None:
                 continue  # don't recommend products with missing data
+            if _specific_tags(p.categories).isdisjoint(current_specific):
+                continue  # not the same kind of product — reject regardless of score
             result = engine.score(p)
             rank = uncapped_overall(result)
             if rank > current_score:
@@ -159,16 +169,45 @@ async def find_better_alternatives(
     return best[:max_results]
 
 
-# Categories so broad they mix unrelated product types — e.g. every drink together,
-# or all plant products / all food. Broadening into these is what surfaced juice,
-# tea and yogurt as "alternatives" to a cola, so they are never searched.
+# Categories so broad they mix unrelated product KINDS. These are never searched
+# for alternatives, AND never count as the "same kind" link between two products:
+# sharing only one of these (e.g. both are "snacks", both "confectioneries") does
+# not make a cracker a valid alternative to chewing gum. Broadening into these is
+# what surfaced juice/tea/yogurt for a cola, and biscuits/chocolate for gum.
 _TOO_GENERIC_TAGS = frozenset({
+    # Top-level / near-top groupings.
     "en:foods",
     "en:groceries",
     "en:beverages",
     "en:beverages-and-beverages-preparations",
     "en:plant-based-foods",
     "en:plant-based-foods-and-beverages",
+    "en:dairies",
+    "en:fats",
+    "en:meats",
+    "en:frozen-foods",
+    "en:canned-foods",
+    "en:fermented-foods",
+    "en:fermented-milk-products",
+    # Mid-level "snack / occasion" groupings that mix fundamentally different
+    # kinds of product (the gum-vs-crackers failure lived here).
+    "en:snacks",
+    "en:sweet-snacks",
+    "en:salty-snacks",
+    "en:sugary-snacks",
+    "en:confectioneries",
+    "en:candies",
+    "en:desserts",
+    "en:breakfasts",
+    "en:meals",
+    "en:prepared-meals",
+    "en:microwave-meals",
+    "en:plant-based-meals",
+    "en:cereals-and-potatoes",
+    "en:cereals-and-their-products",
+    # "Bars" spans cereal bars, chocolate bars and protein bars — too mixed to
+    # establish same-kind on its own (real pairs share e.g. en:cereal-bars).
+    "en:bars",
 })
 
 # A canonical OFF category tag is an ``en:`` prefix followed by a lowercase,
@@ -176,6 +215,15 @@ _TOO_GENERIC_TAGS = frozenset({
 # ``en:Pâtes à tartiner`` (capitals/spaces/accents) that don't exist in the search
 # index — those must be rejected so they don't waste search levels.
 _CANONICAL_EN_TAG = re.compile(r"^en:[a-z0-9-]+$")
+
+
+def _specific_tags(categories: list[str]) -> set[str]:
+    """The canonical ``en:`` category tags specific enough to establish that two
+    products are the *same kind* — i.e. excluding the broad ``_TOO_GENERIC_TAGS``
+    groupings. Two products sharing at least one of these are genuinely comparable;
+    sharing only a grouping like ``en:snacks`` is not enough."""
+    return {c for c in categories
+            if _CANONICAL_EN_TAG.match(c) and c not in _TOO_GENERIC_TAGS}
 
 
 def _ordered_category_tags(categories: list[str]) -> list[str]:
