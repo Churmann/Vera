@@ -4,10 +4,26 @@ import time
 from dataclasses import dataclass
 
 import httpx
-import truststore
 
 from app.config import Settings
 from app.models import NormalisedProduct, OFFError
+
+
+def _ssl_verify():
+    """SSL verification setting for the OFF HTTP client.
+
+    Prefer the OS trust store via ``truststore`` so the app keeps working behind
+    a TLS-intercepting proxy or antivirus (common on dev machines, e.g. AVG on
+    Windows). If truststore is unavailable or fails to initialise — e.g. on a
+    minimal Linux host in production — fall back to httpx's default certifi CA
+    bundle so the Open Food Facts connection still works everywhere.
+    """
+    try:
+        import truststore
+
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    except Exception:
+        return True  # httpx default verification (certifi CA bundle)
 
 # /cgi/search.pl is permanently deprecated (503); full-text search moved to search-a-licious.
 _SEARCH_URL = "https://search.openfoodfacts.org/search"
@@ -41,7 +57,7 @@ class OFFClient:
         self._client = httpx.AsyncClient(
             headers={"User-Agent": settings.off_user_agent},
             timeout=settings.off_request_timeout,
-            verify=truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
+            verify=_ssl_verify(),
         )
         self._cache: dict[str, tuple[NormalisedProduct, float]] = {}
         self._ttl = settings.off_cache_ttl
