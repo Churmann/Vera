@@ -14,3 +14,17 @@ build/
 *.html
 !templates/
 !templates/*.html
+
+# virtualenvs
+venv/
+.venv/
+env/
+
+# env file variants (keep the example)
+.env.*
+!.env.example
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
