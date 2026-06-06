@@ -53,8 +53,12 @@ a { color: inherit; }
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   flex-wrap: wrap;
 }
-.logo { text-decoration: none; font-size: 1.25rem; font-weight: 700; }
-.logo span { color: var(--color-accent); }
+.logo {
+  display: inline-flex; align-items: center; gap: .5rem;
+  text-decoration: none; font-size: 1.25rem; font-weight: 700; letter-spacing: -.01em;
+}
+.logo-mark { width: 32px; height: 32px; display: block; flex-shrink: 0; }
+.logo-text { color: var(--color-text); }
 
 /* Primary nav */
 .site-nav { display: flex; gap: .35rem; }

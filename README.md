@@ -1,6 +1,6 @@
 # Vera
 
-A food product scorer that shows its work.
+The truth about what's in your food.
 
 Search any food product and get a score — but unlike opaque apps that hand you a single number with no explanation, Vera breaks down exactly *why* a product scores the way it does, shows the evidence behind every flagged ingredient, and tells you how confident it is in the data.
 
@@ -11,7 +11,7 @@ Search any food product and get a score — but unlike opaque apps that hand you
 Yuka is popular, but it has well-documented flaws:
 
 | Yuka | Vera |
-|------|-----------------|
+|------|------|
 | Single verdict, no breakdown | Three visible dimensions, each scored separately |
 | Opaque weighting | Weights shown as percentages — and you can change them |
 | Flags additives with no evidence | Every flagged additive shows the science, dose/context, and a source link |
