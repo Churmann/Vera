@@ -120,7 +120,7 @@ DEFAULT_WEIGHT_NOVA=0.2
 pytest
 ```
 
-61 tests covering the scoring engine, additives database, Open Food Facts client, and all routes.
+165 tests covering the scoring engine, additives database, Open Food Facts client, and all routes.
 
 ---
 
