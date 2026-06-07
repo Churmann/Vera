@@ -45,9 +45,15 @@ test("productUrl builds the existing /product route and encodes the code", () =>
   assert.equal(productUrl("12/34"), "/product/12%2F34");
 });
 
-test("cameraConstraints prefers the rear ('environment') camera", () => {
+test("cameraConstraints prefers the rear ('environment') camera at high resolution", () => {
   const c = cameraConstraints();
-  assert.deepEqual(c, { video: { facingMode: { ideal: "environment" } } });
+  assert.deepEqual(c, {
+    video: {
+      facingMode: { ideal: "environment" },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+    },
+  });
 });
 
 test("preflightKind blocks insecure / unsupported contexts before touching the camera", () => {

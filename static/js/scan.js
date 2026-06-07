@@ -30,8 +30,20 @@ export function productUrl(code) {
 
 // Prefer the rear camera on phones; `ideal` (not `exact`) so laptops with only
 // a front camera still work instead of throwing OverconstrainedError.
+//
+// Request a high resolution too: without it, phones default to ~640x480, where a
+// retail barcode's bars don't span enough pixels for ZXing to resolve them — so
+// every frame is a NotFoundException and the camera looks live but never scans.
+// `ideal` again means a device that can't reach 1080p degrades gracefully
+// instead of throwing OverconstrainedError.
 export function cameraConstraints() {
-  return { video: { facingMode: { ideal: "environment" } } };
+  return {
+    video: {
+      facingMode: { ideal: "environment" },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+    },
+  };
 }
 
 // Decide, before touching the camera, whether we even can. getUserMedia needs
