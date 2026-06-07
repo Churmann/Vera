@@ -9,8 +9,5 @@ class Settings(BaseSettings):
     # backoff starting at off_retry_backoff seconds, before surfacing the error.
     off_max_retries: int = 3
     off_retry_backoff: float = 0.5
-    default_weight_nutrition: float = 0.5
-    default_weight_additives: float = 0.3
-    default_weight_nova: float = 0.2
 
     model_config = {"env_file": ".env"}

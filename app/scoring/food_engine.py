@@ -19,7 +19,7 @@ class FoodScoringEngine:
 
         cap_reasons: list[str] = []
         if nutrition_dim.score <= NUTRITION_CAP_THRESHOLD:
-            cap_reasons.append("nutritionally poor (Nutri-Score D or E)")
+            cap_reasons.append("nutritionally poor (Nutri-Score E)")
         if nova_dim.score == 0:
             cap_reasons.append("ultra-processed (NOVA group 4)")
 
