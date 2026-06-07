@@ -12,3 +12,9 @@ Follow-ups, not blockers.
   can still suggest products that aren't true substitutes — e.g. a chocolate spread
   surfacing peanut butter or margarine instead of other sweet spreads. Consider
   refining candidate selection so suggestions stay within the same product sub-type.
+
+## Future enhancements
+
+- [ ] **Let users submit data for products missing from Open Food Facts (photos +
+  composition), the way Yuka handles coverage gaps** — since the crowd-sourced
+  database has incomplete data for some products.
