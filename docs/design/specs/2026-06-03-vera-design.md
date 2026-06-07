@@ -2,6 +2,13 @@
 **Date:** 2026-06-03
 **Status:** Approved
 
+> **Note — original spec; implementation has evolved.** This is the original v1 design and is kept for historical context. Several deliberate design decisions were made after this was written:
+> - **Fixed, transparent weights** instead of user-adjustable weight sliders — adjustable weights let users game the score, which undermines the integrity of a single trustworthy verdict.
+> - **Barcode scanning added** — the camera scanner removes the friction of typing product names (this spec describes name search only).
+> - **Better-alternatives recommendations, scan history, and an overview page added** — features that extend the original scope.
+>
+> For the current feature set, see the [README](../../../README.md).
+
 ## Overview
 
 A web app that scores the healthiness and safety of food products, designed as a transparent, evidence-based alternative to Yuka. Every design decision fixes a documented Yuka complaint: no opaque single verdict, visible weights, per-ingredient evidence with sources, honest uncertainty, and positives shown alongside flags.
