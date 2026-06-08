@@ -14,6 +14,23 @@ _POSITIVES: dict[int, str] = {
     2: "Processed culinary ingredient — low industrial processing.",
 }
 
+# The plain-language classification shown prominently in place of "NOVA group N".
+_PLAIN_BAND: dict[int | None, str] = {
+    1: "Minimally processed",
+    2: "Processed culinary ingredient",
+    3: "Processed",
+    4: "Ultra-processed",
+    None: "Processing level unknown",
+}
+
+# Plain explanation of the metric itself, shown behind the info icon.
+_MEANING = (
+    "Processing level uses the NOVA scale (groups 1–4). Higher groups mean more "
+    "industrial processing; ultra-processed foods (group 4) are made with "
+    "ingredients you wouldn't cook with at home and are linked to poorer health "
+    "outcomes."
+)
+
 
 class NovaScorer:
     def score(self, product: NormalisedProduct) -> DimensionScore:
@@ -38,4 +55,6 @@ class NovaScorer:
             summary=_SUMMARIES[group],
             positives=positives,
             flags=[],
+            plain_band=_PLAIN_BAND[group],
+            meaning=_MEANING,
         )

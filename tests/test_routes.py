@@ -199,6 +199,84 @@ def test_product_page_groups_factors_into_negatives_and_positives():
 
 
 @respx.mock
+def test_product_page_explains_dimensions_in_plain_language():
+    # Nutella: Nutri-Score E + NOVA 4 + one low-risk additive (E322 lecithin).
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Nutella", "brands": "Ferrero",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": ["en:e322-lecithins"],
+            "ingredients_text": "Sugar, palm oil", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    factors = response.text[response.text.index('id="factors"'):]
+    # Each dimension leads with the plain band, kept beside its score number...
+    assert "factor-plain-band" in factors
+    assert "Ultra-processed" in factors
+    # ...with the jargon demoted to a smaller supporting sub-label...
+    assert "factor-tech" in factors
+    assert "NOVA group 4" in factors
+    # ...and a consistent info icon carrying the plain explanation.
+    assert "factor-info" in factors
+    assert "What this means" in factors
+    # The plain-language explanations themselves (education over jargon):
+    assert "cook with at home" in factors                       # processing
+    assert "A (best) to E (worst)" in factors                   # nutrition
+    assert "most approved additives are low-risk" in factors    # additives
+
+
+@respx.mock
+def test_additives_explanation_shown_once_not_repeated_per_row():
+    # A Coke-Zero-style product with several additives. The generic "what
+    # additives means" explanation must appear once on the section, never once
+    # per additive row (which would read as clutter).
+    additives = ["en:e150d", "en:e338", "en:e950", "en:e951", "en:e955"]
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Coca-Cola Zero", "brands": "Coca-Cola",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": additives,
+            "ingredients_text": "Water", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    factors = response.text[response.text.index('id="factors"'):]
+    # Exactly one additives explanation, despite five additive rows.
+    assert factors.count("most approved additives are low-risk") == 1
+    # The dimension info icons stay (one each for nutrition + processing).
+    assert factors.count('class="factor-info"') == 2
+
+
+@respx.mock
+def test_additives_explanation_is_a_subtle_disclosure_under_the_additives():
+    additives = ["en:e150d", "en:e338", "en:e950", "en:e951", "en:e955"]
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Coca-Cola Zero", "brands": "Coca-Cola",
+            "nutriscore_grade": "e", "nova_group": 4,
+            "additives_tags": additives,
+            "ingredients_text": "Water", "image_url": None,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    factors = response.text[response.text.index('id="factors"'):]
+    # The explanation is a subtle, optional "What are additives?" affordance...
+    assert "What are additives?" in factors
+    assert "additives-info" in factors
+    assert "factor-additives-note" not in factors  # the old floating note is gone
+    # ...tied to the flagged additives in the Negatives group (directly under the
+    # additive rows), not floating at the very bottom after Positives.
+    assert factors.index("What are additives?") > factors.index("Aspartame")
+    assert factors.index("What are additives?") < factors.index("Positives")
+    # ...revealing the same plain-language explanation when opened.
+    assert "most approved additives are low-risk" in factors
+
+
+@respx.mock
 def test_product_page_caps_many_low_risk_additives_but_shows_all_negatives():
     additives = [f"en:e{n}" for n in range(500, 512)]  # 12 unknown -> low-tail additives
     respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(

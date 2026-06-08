@@ -11,11 +11,13 @@ from app.presentation import (
 )
 
 
-def _dim(id, label, score, input_label="x", positives=None, flags=None):
+def _dim(id, label, score, input_label="x", positives=None, flags=None,
+         plain_band="band", meaning="what this means"):
     return DimensionScore(
         id=id, label=label, score=score,
         input_label=input_label, input_value=score, weight_default=0.3,
         summary=f"{label} summary", positives=positives or [], flags=flags or [],
+        plain_band=plain_band, meaning=meaning,
     )
 
 
@@ -32,7 +34,8 @@ def _result(nutrition, nova, additive_cards):
     return ScoreResult(
         dimensions=[
             _dim("nutrition", "Nutritional Quality", nutrition),
-            _dim("additives", "Additives", 100, flags=additive_cards),
+            _dim("additives", "Additives", 100, flags=additive_cards,
+                 meaning="Additives summary meaning"),
             _dim("nova", "Processing Level", nova),
         ],
         confidence=ConfidenceLevel.HIGH, confidence_notes=[], off_url="http://o",
@@ -109,6 +112,68 @@ def test_negative_additives_are_never_hidden():
     grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=cards))
     assert len(grouped.negatives) == 9
     assert grouped.hidden_positives == []
+
+
+def test_dimension_row_leads_with_plain_band_and_keeps_technical_label():
+    grouped = group_factors(_result(nutrition=20, nova=100, additive_cards=[]))
+    nutrition = next(r for r in grouped.negatives if r.label == "Nutritional Quality")
+    # Plain band is carried for prominent display...
+    assert nutrition.plain_band == "band"
+    # ...the jargon term survives as smaller supporting detail...
+    assert nutrition.technical_label == nutrition.value_text or nutrition.technical_label
+    # ...and the plain-language explanation rides along for the info icon/body.
+    assert nutrition.meaning == "what this means"
+
+
+def test_dimension_technical_label_comes_from_input_label():
+    result = _result(nutrition=20, nova=100, additive_cards=[])
+    # input_label defaults to "x" in the _dim helper; it becomes the muted sub-label.
+    nutrition = next(r for r in group_factors(result).negatives
+                     if r.label == "Nutritional Quality")
+    assert nutrition.technical_label == "x"
+
+
+def test_additive_rows_do_not_repeat_the_generic_additives_tooltip():
+    cards = [_card("e211", RiskLevel.HIGH, "preservative")]
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=cards))
+    row = next(r for r in grouped.negatives if r.kind == "additive")
+    # Individual additive rows self-explain via their own evidence/dose/source,
+    # so they must NOT carry the generic dimension tooltip — it would repeat on
+    # every row and read as noise when a product has many additives.
+    assert row.meaning == ""
+
+
+def test_additives_explanation_exposed_once_for_the_section():
+    cards = [_card("e211", RiskLevel.HIGH, "preservative")]
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=cards))
+    # The "what additives means" explanation lives once on the section, not per row.
+    assert grouped.additives_meaning == "Additives summary meaning"
+
+
+def test_no_section_additives_note_when_no_additives():
+    # With no additives, the standalone "No additives" dimension row carries its
+    # own info icon, so there is no separate section-level note to show.
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=[]))
+    assert grouped.additives_meaning == ""
+
+
+def test_additives_note_anchors_to_negatives_when_an_additive_is_flagged():
+    # A flagged additive lands in Negatives, so the contextual explainer attaches
+    # there — directly under the additive rows, not floating at the very bottom.
+    cards = [_card("e211", RiskLevel.HIGH, "preservative")]
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=cards))
+    assert grouped.additives_note_in == "negatives"
+
+
+def test_additives_note_anchors_to_positives_when_all_low_risk():
+    cards = [_card("e322", RiskLevel.LOW, "emulsifier")]
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=cards))
+    assert grouped.additives_note_in == "positives"
+
+
+def test_no_additives_note_anchor_when_no_additives():
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=[]))
+    assert grouped.additives_note_in == ""
 
 
 def test_tone_uses_muted_palette_words():

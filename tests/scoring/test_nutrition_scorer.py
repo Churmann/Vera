@@ -34,3 +34,21 @@ def test_dimension_metadata(make_product):
     assert result.id == "nutrition"
     assert result.weight_default == 0.5
     assert len(result.summary) > 0
+
+
+def test_plain_band_leads_with_plain_language(make_product):
+    assert NutritionScorer().score(make_product(nutriscore_grade="E")).plain_band == "Poor"
+    assert NutritionScorer().score(make_product(nutriscore_grade="A")).plain_band == "Excellent"
+    assert NutritionScorer().score(make_product(nutriscore_grade="C")).plain_band == "Average"
+
+
+def test_missing_nutriscore_has_unknown_plain_band(make_product):
+    assert "unknown" in NutritionScorer().score(make_product(nutriscore_grade=None)).plain_band.lower()
+
+
+def test_meaning_explains_nutriscore_in_plain_terms(make_product):
+    meaning = NutritionScorer().score(make_product(nutriscore_grade="E")).meaning.lower()
+    assert "nutri-score" in meaning
+    # Names the plain inputs an ordinary reader recognises.
+    assert "sugar" in meaning and "salt" in meaning
+    assert "fibre" in meaning

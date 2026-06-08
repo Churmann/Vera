@@ -4,6 +4,13 @@ from app.models import DimensionScore, EvidenceCard, NormalisedProduct, RiskLeve
 _RISK_ORDER = {RiskLevel.HIGH: 0, RiskLevel.MODERATE: 1, RiskLevel.LOW: 2, RiskLevel.UNKNOWN: 3}
 _DEDUCTIONS = {RiskLevel.HIGH: 30, RiskLevel.MODERATE: 10, RiskLevel.LOW: 0, RiskLevel.UNKNOWN: 0}
 
+# Plain explanation of the dimension itself, shown behind the info icon.
+_MEANING = (
+    "Additives are substances added during manufacturing — preservatives, "
+    "colours, sweeteners and the like. Vera flags any with evidence of health "
+    "concerns; most approved additives are low-risk."
+)
+
 
 class AdditiveScorer:
     def __init__(self, db: AdditiveDB):
@@ -70,6 +77,8 @@ class AdditiveScorer:
             summary=_summary(high, moderate, count),
             positives=positives,
             flags=cards,
+            plain_band="No additives" if count == 0 else f"{count} additive{'s' if count != 1 else ''}",
+            meaning=_MEANING,
         )
 
 

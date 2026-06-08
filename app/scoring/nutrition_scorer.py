@@ -10,6 +10,22 @@ _SUMMARIES: dict[str | None, str] = {
     None: "Nutri-Score data unavailable for this product.",
 }
 
+# Plain-language classification shown prominently in place of "Nutri-Score X".
+_PLAIN_BAND: dict[str | None, str] = {
+    "A": "Excellent",
+    "B": "Good",
+    "C": "Average",
+    "D": "Below average",
+    "E": "Poor",
+    None: "Nutritional quality unknown",
+}
+
+# Plain explanation of the metric itself, shown behind the info icon.
+_MEANING = (
+    "Nutri-Score grades overall nutritional quality from A (best) to E (worst), "
+    "based on sugar, salt, saturated fat, and beneficial nutrients like fibre."
+)
+
 
 class NutritionScorer:
     def score(self, product: NormalisedProduct) -> DimensionScore:
@@ -34,4 +50,6 @@ class NutritionScorer:
             summary=_SUMMARIES[grade],
             positives=positives,
             flags=[],
+            plain_band=_PLAIN_BAND[grade],
+            meaning=_MEANING,
         )

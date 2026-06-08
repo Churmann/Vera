@@ -75,6 +75,13 @@ class DimensionScore:
     summary: str
     positives: list[str]
     flags: list[EvidenceCard]
+    # Plain-language band shown prominently in place of jargon, e.g.
+    # "Ultra-processed" / "Poor". The technical term (input_label) is kept
+    # alongside as smaller supporting detail.
+    plain_band: str = ""
+    # One-line plain explanation of what this metric means, surfaced behind an
+    # info icon and repeated in the expandable detail (education over jargon).
+    meaning: str = ""
 
 
 @dataclass

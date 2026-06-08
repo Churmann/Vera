@@ -140,3 +140,16 @@ def test_dimension_metadata(make_db, make_product):
     result = scorer.score(make_product(additives=[]))
     assert result.id == "additives"
     assert result.weight_default == 0.3
+
+
+def test_meaning_explains_additives_dimension_in_plain_terms(make_db, make_product):
+    scorer = AdditiveScorer(make_db())
+    meaning = scorer.score(make_product(additives=[])).meaning.lower()
+    assert "additive" in meaning
+    # Reassures with the precautionary, mostly-low-risk framing.
+    assert "low-risk" in meaning
+
+
+def test_no_additives_has_plain_band(make_db, make_product):
+    scorer = AdditiveScorer(make_db())
+    assert scorer.score(make_product(additives=[])).plain_band == "No additives"

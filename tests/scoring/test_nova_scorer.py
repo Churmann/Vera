@@ -34,3 +34,22 @@ def test_dimension_metadata(make_product):
     assert result.id == "nova"
     assert result.weight_default == 0.2
     assert len(result.summary) > 0
+
+
+def test_plain_band_leads_with_plain_language(make_product):
+    # The prominent label is the plain classification, not the NOVA jargon.
+    assert NovaScorer().score(make_product(nova_group=4)).plain_band == "Ultra-processed"
+    assert NovaScorer().score(make_product(nova_group=3)).plain_band == "Processed"
+    assert NovaScorer().score(make_product(nova_group=1)).plain_band == "Minimally processed"
+
+
+def test_missing_nova_has_unknown_plain_band(make_product):
+    assert "unknown" in NovaScorer().score(make_product(nova_group=None)).plain_band.lower()
+
+
+def test_meaning_explains_nova_in_plain_terms(make_product):
+    meaning = NovaScorer().score(make_product(nova_group=4)).meaning.lower()
+    # Explains the scale and the plain-language consequence, jargon expanded.
+    assert "nova" in meaning
+    assert "ultra-processed" in meaning
+    assert "health" in meaning

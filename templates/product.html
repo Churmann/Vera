@@ -29,11 +29,21 @@
       {{ category_icon(row.icon_category) }}
     </span>
     <span class="factor-label">
-      {{ row.label }}{% if row.e_number and (row.e_number | upper) != (row.label | upper) %} <span class="additive-enum">({{ row.e_number | upper }})</span>{% endif %}
+      <span class="factor-label-main">
+        {{ row.label }}{% if row.e_number and (row.e_number | upper) != (row.label | upper) %} <span class="additive-enum">({{ row.e_number | upper }})</span>{% endif %}
+        {% if row.meaning %}
+        <span class="factor-info" tabindex="0" role="note" aria-label="What this means: {{ row.meaning }}">
+          <span class="factor-info-mark" aria-hidden="true">i</span>
+          <span class="factor-info-tooltip" role="tooltip">{{ row.meaning }}</span>
+        </span>
+        {% endif %}
+      </span>
+      {% if row.technical_label %}<span class="factor-tech">{{ row.technical_label }}</span>{% endif %}
     </span>
     {% if row.kind == "additive" %}
     <span class="risk-chip risk-chip--{{ row.tone }}">{{ row.risk_label }}</span>
     {% else %}
+    {% if row.plain_band %}<span class="factor-plain-band">{{ row.plain_band }}</span>{% endif %}
     <span class="factor-value">{{ row.value_text }}</span>
     {% endif %}
     <span class="factor-dot factor-dot--{{ row.tone }}" aria-hidden="true"></span>
@@ -41,6 +51,7 @@
     <span class="factor-chevron" aria-hidden="true">⌄</span>
   </summary>
   <div class="factor-body">
+    {% if row.meaning %}<p class="factor-meaning"><strong>What this means:</strong> {{ row.meaning }}</p>{% endif %}
     {% if row.kind == "dimension" %}
     <p class="factor-derivation">{{ row.derivation }}</p>
     <p class="factor-text">{{ row.summary }}</p>
@@ -55,6 +66,18 @@
     {% endif %}
     {% endif %}
   </div>
+</details>
+{%- endmacro %}
+
+{#- Subtle, optional "What are additives?" explainer. Sits under the additive
+    rows inside their group — a minor affordance, since the rows carry the real
+    evidence themselves. -#}
+{% macro additives_explainer(meaning) -%}
+<details class="additives-info">
+  <summary class="additives-info-summary">
+    <span class="additives-info-mark" aria-hidden="true">i</span>What are additives?
+  </summary>
+  <p class="additives-info-body">{{ meaning }}</p>
 </details>
 {%- endmacro %}
 
@@ -172,6 +195,7 @@
     {% else %}
     <p class="factor-empty">Nothing scoring poorly — this product holds up well across the board.</p>
     {% endif %}
+    {% if factors.additives_note_in == "negatives" %}{{ additives_explainer(factors.additives_meaning) }}{% endif %}
   </div>
 
   <div class="factor-group factor-group--positives">
@@ -195,6 +219,7 @@
     {% else %}
     <p class="factor-empty">No standout positives for this product.</p>
     {% endif %}
+    {% if factors.additives_note_in == "positives" %}{{ additives_explainer(factors.additives_meaning) }}{% endif %}
   </div>
 </section>
 {% endblock %}
