@@ -54,6 +54,22 @@
     {% if row.meaning %}<p class="factor-meaning"><strong>What this means:</strong> {{ row.meaning }}</p>{% endif %}
     {% if row.kind == "dimension" %}
     <p class="factor-derivation">{{ row.derivation }}</p>
+    {% if row.icon_category == "nutrition" %}
+      {% if row.nutrient_bars %}
+      <div class="nutrient-bars">
+        {% for bar in row.nutrient_bars %}{{ nutrient_bar(bar) }}{% endfor %}
+      </div>
+      <p class="nutrient-source">
+        Scale {{ row.nutrient_basis }}. Thresholds:
+        <a href="https://www.gov.uk/government/publications/front-of-pack-nutrition-labelling-guidance" target="_blank" rel="noopener">UK FSA front-of-pack</a>
+        (sugar, salt, saturated fat) ·
+        <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006R1924" target="_blank" rel="noopener">EU Reg. 1924/2006</a>
+        (fibre). Protein &amp; energy have no official per-100g threshold.
+      </p>
+      {% else %}
+      <p class="factor-text nutrient-missing-all">Per-nutrient detail isn't available for this product on Open Food Facts.</p>
+      {% endif %}
+    {% endif %}
     <p class="factor-text">{{ row.summary }}</p>
     {% if row.positives %}
     <ul class="factor-positives">{% for pos in row.positives %}<li>{{ pos }}</li>{% endfor %}</ul>
@@ -67,6 +83,40 @@
     {% endif %}
   </div>
 </details>
+{%- endmacro %}
+
+{#- One per-nutrient bar: header (label · amount · band chip), zoned/neutral
+    track with marker, tick labels, optional caption. Colour is always paired
+    with the band word so it never relies on colour alone. -#}
+{% macro nutrient_bar(bar) -%}
+<div class="nutrient-bar nutrient-bar--{{ bar.kind }}{% if not bar.present %} nutrient-bar--missing{% endif %}">
+  <div class="nutrient-bar-head">
+    <span class="nutrient-bar-name">{{ bar.label }}{% if bar.caption and bar.present and bar.kind != 'negative' %} <span class="nutrient-bar-caption">· {{ bar.caption }}</span>{% endif %}</span>
+    {% if bar.present %}
+    <span class="nutrient-bar-meta">
+      <span class="nutrient-bar-amount">{{ '%g'|format(bar.amount) }}<span class="nutrient-bar-unit"> {{ bar.unit }}</span></span>
+      {% if bar.band_label %}<span class="nutrient-band nutrient-band--{{ bar.band }}">{{ bar.band_label }}</span>{% endif %}
+    </span>
+    {% else %}
+    <span class="nutrient-bar-amount nutrient-bar-amount--missing">Not provided</span>
+    {% endif %}
+  </div>
+  {% if bar.present %}
+  <div class="nutrient-track nutrient-track--{{ bar.kind }} nutrient-track--{{ bar.band }}">
+    {% if bar.kind in ('negative', 'higher_better') %}
+    <span class="nutrient-zone nutrient-zone--lo"></span>
+    <span class="nutrient-zone nutrient-zone--mid"></span>
+    <span class="nutrient-zone nutrient-zone--hi"></span>
+    {% endif %}
+    <span class="nutrient-marker" style="left: {{ bar.marker_pct }}%"></span>
+  </div>
+  {% if bar.ticks %}
+  <div class="nutrient-ticks">{% for t in bar.ticks %}<span>{{ t }}</span>{% endfor %}</div>
+  {% endif %}
+  {% else %}
+  <div class="nutrient-track nutrient-track--empty" aria-hidden="true"></div>
+  {% endif %}
+</div>
 {%- endmacro %}
 
 {#- Subtle, optional "What are additives?" explainer. Sits under the additive

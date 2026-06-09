@@ -51,6 +51,8 @@ class NormalisedProduct:
     raw_off_url: str
     # OFF categories_tags, ordered broad → most-specific (as OFF returns them).
     categories: list[str] = field(default_factory=list)
+    nutriments: dict[str, float] = field(default_factory=dict)
+    is_beverage: bool = False
 
 
 @dataclass
@@ -62,6 +64,22 @@ class EvidenceCard:
     dose_context: str
     source_url: str | None
     category: str = "other"
+
+
+@dataclass
+class NutrientBar:
+    key: str                 # "sugars" | "salt" | "saturated_fat" | "fibre" | "protein" | "energy_kcal"
+    label: str               # "Sugar", "Saturated fat", ...
+    present: bool
+    amount: float | None
+    unit: str                # "g" | "kcal"
+    kind: str                # "negative" | "higher_better" | "neutral" | "missing"
+    band: str                # colour tone token: "low" | "moderate" | "high" | "none"
+    band_label: str          # display word: "Low" | "Medium" | "High" | "Source" | ""
+    marker_pct: float        # 0–100, clamped
+    ticks: list[str] = field(default_factory=list)
+    caption: str = ""
+    source_key: str = ""     # "fsa" | "eu_fibre" | ""
 
 
 @dataclass
@@ -82,6 +100,8 @@ class DimensionScore:
     # One-line plain explanation of what this metric means, surfaced behind an
     # info icon and repeated in the expandable detail (education over jargon).
     meaning: str = ""
+    nutrient_bars: list[NutrientBar] = field(default_factory=list)
+    nutrient_basis: str = ""   # "per 100 g" | "per 100 ml" | ""
 
 
 @dataclass

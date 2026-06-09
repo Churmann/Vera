@@ -52,6 +52,9 @@ class FactorRow:
     derivation: str = ""
     summary: str = ""
     positives: list[str] = field(default_factory=list)
+    # Nutrition dimension only: per-nutrient transparency bars + their basis.
+    nutrient_bars: list = field(default_factory=list)
+    nutrient_basis: str = ""
     # Additive detail.
     e_number: str = ""
     risk_label: str = ""
@@ -99,6 +102,8 @@ def _dimension_row(dim, icon_category: str) -> FactorRow:
         derivation=f"{dim.input_label} → {dim.input_value}/100",
         summary=dim.summary,
         positives=list(dim.positives),
+        nutrient_bars=list(dim.nutrient_bars),
+        nutrient_basis=dim.nutrient_basis,
     )
 
 

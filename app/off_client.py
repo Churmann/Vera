@@ -29,7 +29,7 @@ def _ssl_verify():
 _SEARCH_URL = "https://search.openfoodfacts.org/search"
 _SEARCH_FIELDS = "code,product_name,brands,image_url"
 _PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
-_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags"
+_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags,nutriments"
 # Enough to pre-rank a candidate without fetching the full product. additives_tags is
 # NOT available from search (only additives_n), so promising candidates are still
 # fetched in full for accurate additive scoring.
@@ -197,6 +197,49 @@ def _parse_nova(raw) -> int | None:
     return None
 
 
+# OFF nutriment key -> our internal key. All are the per-100g variants.
+_NUTRIMENT_KEYS = {
+    "sugars": "sugars_100g",
+    "salt": "salt_100g",
+    "saturated_fat": "saturated-fat_100g",
+    "fibre": "fiber_100g",        # OFF uses US spelling; British fallback below
+    "protein": "proteins_100g",
+}
+_BEVERAGE_HINTS = ("beverages", "drinks")
+
+
+def _to_float(v) -> float | None:
+    try:
+        if v is None or v == "":
+            return None
+        return float(v)
+    except (ValueError, TypeError):
+        return None
+
+
+def _parse_nutriments(raw: dict) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for internal, off_key in _NUTRIMENT_KEYS.items():
+        v = _to_float(raw.get(off_key))
+        if v is None and internal == "fibre":
+            v = _to_float(raw.get("fibre_100g"))
+        if v is not None:
+            out[internal] = v
+    # Energy: OFF reports kcal as energy-kcal_100g; fall back to kJ (energy_100g).
+    kcal = _to_float(raw.get("energy-kcal_100g"))
+    if kcal is None:
+        kj = _to_float(raw.get("energy_100g"))
+        if kj is not None:
+            kcal = round(kj / 4.184, 1)
+    if kcal is not None:
+        out["energy_kcal"] = kcal
+    return out
+
+
+def _is_beverage(categories_tags: list[str]) -> bool:
+    return any(any(h in tag for h in _BEVERAGE_HINTS) for tag in categories_tags)
+
+
 def _normalise(off_id: str, p: dict) -> NormalisedProduct:
     seen: set[str] = set()
     additives: list[str] = []
@@ -220,4 +263,6 @@ def _normalise(off_id: str, p: dict) -> NormalisedProduct:
         image_url=p.get("image_url") or None,
         raw_off_url=f"https://world.openfoodfacts.org/product/{off_id}/",
         categories=[c for c in (p.get("categories_tags") or []) if c],
+        nutriments=_parse_nutriments(p.get("nutriments") or {}),
+        is_beverage=_is_beverage(p.get("categories_tags") or []),
     )

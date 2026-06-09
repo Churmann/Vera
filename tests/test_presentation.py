@@ -2,6 +2,7 @@ from app.models import (
     ConfidenceLevel,
     DimensionScore,
     EvidenceCard,
+    NutrientBar,
     RiskLevel,
     ScoreResult,
 )
@@ -181,3 +182,24 @@ def test_tone_uses_muted_palette_words():
     nutrition = next(r for r in grouped.negatives if r.label == "Nutritional Quality")
     assert nutrition.tone == "high"
     assert nutrition.tone_label == "Poor"
+
+
+def _nutrition_dim_with_bars():
+    return DimensionScore(
+        id="nutrition", label="Nutritional Quality", score=60,
+        input_label="Nutri-Score C", input_value=60, weight_default=0.5,
+        summary="Average.", positives=[], flags=[],
+        nutrient_bars=[NutrientBar(
+            key="sugars", label="Sugar", present=True, amount=2.4, unit="g",
+            kind="negative", band="low", band_label="Low", marker_pct=16.0,
+        )],
+        nutrient_basis="per 100 g",
+    )
+
+
+def test_dimension_row_carries_nutrient_bars():
+    from app.presentation import _dimension_row
+    row = _dimension_row(_nutrition_dim_with_bars(), "nutrition")
+    assert len(row.nutrient_bars) == 1
+    assert row.nutrient_bars[0].key == "sugars"
+    assert row.nutrient_basis == "per 100 g"

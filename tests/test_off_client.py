@@ -4,7 +4,7 @@ import respx
 
 from app.config import Settings
 from app.models import OFFError
-from app.off_client import OFFClient
+from app.off_client import OFFClient, _normalise
 
 
 @pytest.fixture
@@ -280,3 +280,43 @@ async def test_fetch_product_uses_first_brand(settings):
     product = await client.fetch_product("321")
     await client.aclose()
     assert product.brand == "Nutella"
+
+
+def test_normalise_parses_nutriments():
+    p = _normalise("123", {
+        "product_name": "Test",
+        "nutriments": {
+            "sugars_100g": 2.4, "salt_100g": "0.18", "saturated-fat_100g": 1.1,
+            "fiber_100g": 3.2, "proteins_100g": 8.0, "energy-kcal_100g": 250,
+        },
+    })
+    assert p.nutriments["sugars"] == 2.4
+    assert p.nutriments["salt"] == 0.18          # string coerced to float
+    assert p.nutriments["saturated_fat"] == 1.1
+    assert p.nutriments["fibre"] == 3.2
+    assert p.nutriments["protein"] == 8.0
+    assert p.nutriments["energy_kcal"] == 250
+
+
+def test_normalise_omits_missing_and_nonnumeric_nutriments():
+    p = _normalise("123", {"product_name": "Test", "nutriments": {
+        "sugars_100g": "", "salt_100g": "n/a",
+    }})
+    assert "sugars" not in p.nutriments
+    assert "salt" not in p.nutriments
+
+
+def test_normalise_energy_falls_back_to_kj():
+    p = _normalise("123", {"product_name": "Test", "nutriments": {"energy_100g": 1046}})
+    # 1046 kJ / 4.184 = 250.0 kcal
+    assert p.nutriments["energy_kcal"] == 250.0
+
+
+def test_normalise_detects_beverage_from_categories():
+    p = _normalise("123", {"product_name": "Cola", "categories_tags": ["en:sodas", "en:beverages"]})
+    assert p.is_beverage is True
+
+
+def test_normalise_non_beverage_default():
+    p = _normalise("123", {"product_name": "Bar", "categories_tags": ["en:snacks"]})
+    assert p.is_beverage is False

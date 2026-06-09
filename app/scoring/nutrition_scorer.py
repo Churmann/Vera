@@ -1,4 +1,5 @@
 from app.models import DimensionScore, NormalisedProduct
+from app.nutrition_bars import build as build_nutrient_bars
 from app.scoring.tables import NUTRISCORE_TO_SCORE
 
 _SUMMARIES: dict[str | None, str] = {
@@ -52,4 +53,6 @@ class NutritionScorer:
             flags=[],
             plain_band=_PLAIN_BAND[grade],
             meaning=_MEANING,
+            nutrient_bars=build_nutrient_bars(product),
+            nutrient_basis=("per 100 ml" if product.is_beverage else "per 100 g"),
         )

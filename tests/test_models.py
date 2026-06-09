@@ -1,4 +1,4 @@
-from app.models import RiskLevel, ConfidenceLevel, OFFError, NormalisedProduct, AdditiveInfo, EvidenceCard, DimensionScore, ScoreResult
+from app.models import RiskLevel, ConfidenceLevel, OFFError, NormalisedProduct, AdditiveInfo, EvidenceCard, DimensionScore, ScoreResult, NutrientBar
 
 
 def test_risk_level_values():
@@ -72,3 +72,32 @@ def test_score_result_stores_fields():
     )
     assert result.confidence == ConfidenceLevel.HIGH
     assert result.dimensions == []
+
+
+def test_nutrient_bar_defaults():
+    bar = NutrientBar(
+        key="sugars", label="Sugar", present=True, amount=2.4, unit="g",
+        kind="negative", band="low", band_label="Low", marker_pct=16.0,
+    )
+    assert bar.ticks == []
+    assert bar.caption == ""
+    assert bar.source_key == ""
+
+
+def test_normalised_product_nutriment_fields_default_empty():
+    p = NormalisedProduct(
+        off_id="x", name="X", brand=None, nutriscore_grade=None, nova_group=None,
+        additives=[], ingredients_text=None, image_url=None, raw_off_url="u",
+    )
+    assert p.nutriments == {}
+    assert p.is_beverage is False
+
+
+def test_dimension_score_nutrient_bars_default_empty():
+    d = DimensionScore(
+        id="nutrition", label="Nutritional Quality", score=60,
+        input_label="Nutri-Score C", input_value=60, weight_default=0.5,
+        summary="", positives=[], flags=[],
+    )
+    assert d.nutrient_bars == []
+    assert d.nutrient_basis == ""

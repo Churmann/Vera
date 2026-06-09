@@ -11,6 +11,7 @@ def make_product():
             nutriscore_grade=None, nova_group=None, additives=[],
             ingredients_text=None, image_url=None,
             raw_off_url="https://world.openfoodfacts.org/product/test123/",
+            nutriments={}, is_beverage=False,
         )
         return NormalisedProduct(**{**defaults, **kwargs})
     return _make

@@ -52,3 +52,25 @@ def test_meaning_explains_nutriscore_in_plain_terms(make_product):
     # Names the plain inputs an ordinary reader recognises.
     assert "sugar" in meaning and "salt" in meaning
     assert "fibre" in meaning
+
+
+def test_score_attaches_nutrient_bars(make_product):
+    dim = NutritionScorer().score(make_product(
+        nutriscore_grade="C", nutriments={"sugars": 2.4, "salt": 0.1},
+    ))
+    assert dim.score == 60                      # scoring unchanged
+    keys = [b.key for b in dim.nutrient_bars]
+    assert keys[0] == "sugars"
+    assert dim.nutrient_basis == "per 100 g"
+
+
+def test_score_uses_drink_basis_for_beverages(make_product):
+    dim = NutritionScorer().score(make_product(
+        nutriscore_grade="E", is_beverage=True, nutriments={"sugars": 10.0},
+    ))
+    assert dim.nutrient_basis == "per 100 ml"
+
+
+def test_score_without_nutriments_has_no_bars(make_product):
+    dim = NutritionScorer().score(make_product(nutriscore_grade="B"))
+    assert dim.nutrient_bars == []

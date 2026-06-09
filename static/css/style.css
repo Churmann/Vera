@@ -523,3 +523,38 @@ a { color: inherit; }
   .score-number { font-size: 3rem; }
   .container { padding: 1.5rem 1rem; }
 }
+
+/* ---- Per-nutrient transparency bars (Nutritional Quality, expanded) ---- */
+.nutrient-bars { margin: .75rem 0 .25rem; }
+.nutrient-bar { margin: 0 0 1rem; }
+.nutrient-bar-head { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; margin-bottom: .4rem; }
+.nutrient-bar-name { font-size: .88rem; font-weight: 600; }
+.nutrient-bar-caption { font-weight: 400; font-size: .76rem; color: var(--color-text-muted); }
+.nutrient-bar-meta { display: inline-flex; align-items: baseline; gap: .5rem; }
+.nutrient-bar-amount { font-size: .88rem; font-variant-numeric: tabular-nums; }
+.nutrient-bar-unit { color: var(--color-text-muted); font-weight: 400; font-size: .8rem; }
+.nutrient-bar-amount--missing { color: var(--color-text-muted); font-style: italic; }
+.nutrient-band { font-size: .7rem; font-weight: 600; padding: .06rem .45rem; border-radius: 999px; white-space: nowrap; }
+.nutrient-band--low { color: var(--risk-low); background: var(--risk-low-bg); }
+.nutrient-band--moderate { color: var(--risk-moderate); background: var(--risk-moderate-bg); }
+.nutrient-band--high { color: var(--risk-high); background: var(--risk-high-bg); }
+
+.nutrient-track { position: relative; display: flex; height: 9px; border-radius: 999px; overflow: hidden; background: var(--risk-unknown-bg); }
+.nutrient-zone { height: 100%; flex: 1 1 33.333%; }
+/* Soft tints of the muted risk palette — calm, not a loud traffic light. */
+.nutrient-track--negative .nutrient-zone--lo  { background: #d8e3db; }
+.nutrient-track--negative .nutrient-zone--mid { background: #ece0c8; }
+.nutrient-track--negative .nutrient-zone--hi  { background: #e7d2cd; }
+/* higher-is-better (fibre) reverses the tints: low amount on the left is the poor end. */
+.nutrient-track--higher_better .nutrient-zone--lo  { background: #e7d2cd; }
+.nutrient-track--higher_better .nutrient-zone--mid { background: #ece0c8; }
+.nutrient-track--higher_better .nutrient-zone--hi  { background: #d8e3db; }
+.nutrient-track--neutral { background: #e6e7ea; }
+.nutrient-track--empty { background: repeating-linear-gradient(45deg, #f0f1f3, #f0f1f3 6px, #f7f7f8 6px, #f7f7f8 12px); }
+
+.nutrient-marker { position: absolute; top: -3px; width: 3px; height: 15px; border-radius: 2px; background: var(--color-text); box-shadow: 0 0 0 2px var(--color-surface); transform: translateX(-50%); }
+.nutrient-ticks { display: flex; justify-content: space-between; margin-top: .3rem; font-size: .66rem; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+
+.nutrient-source { margin-top: .9rem; font-size: .74rem; color: var(--color-text-muted); }
+.nutrient-source a { color: var(--color-accent); }
+.nutrient-missing-all { color: var(--color-text-muted); font-style: italic; }

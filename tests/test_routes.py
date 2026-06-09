@@ -468,3 +468,23 @@ def test_product_page_emits_history_record_without_forbidden_strings():
     # ...while still not reintroducing the forbidden client-scoring strings.
     assert "score-data" not in text
     assert "scorer.js" not in text
+
+
+@respx.mock
+def test_product_page_renders_nutrient_bars():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Granola", "nutriscore_grade": "c", "nova_group": 3,
+            "additives_tags": [], "ingredients_text": "Oats", "image_url": None,
+            "nutriments": {"sugars_100g": 21.3, "salt_100g": 0.2,
+                           "saturated-fat_100g": 2.1, "fiber_100g": 7.4,
+                           "proteins_100g": 9.2, "energy-kcal_100g": 432},
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    assert response.status_code == 200
+    body = response.text
+    assert "nutrient-bar" in body          # the bar component rendered
+    assert "Saturated fat" in body
+    assert "per 100 g" in body
