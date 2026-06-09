@@ -1,6 +1,6 @@
 # Per-nutrient Transparency Bars Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Implementation note:** This plan is structured to be implemented task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Show per-nutrient bars (sugar, salt, saturated fat, fibre, protein, energy per 100 g) inside the expanded Nutritional Quality section, on sourced low→high scales, without changing the Nutri-Score scoring.
 
@@ -817,14 +817,12 @@ git commit -m "feat: per-nutrient transparency bars in Nutritional Quality
 
 Sugar/salt/saturated fat on UK FSA front-of-pack thresholds (food &
 drink columns), fibre on EU 1924/2006, protein & energy neutral.
-Read-only layer over OFF nutriments; Nutri-Score scoring unchanged.
-
-Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+Read-only layer over OFF nutriments; Nutri-Score scoring unchanged."
 ```
 
 - [ ] **Step 5: Finish the branch**
 
-Use superpowers:finishing-a-development-branch to choose merge / PR / cleanup.
+Choose how to integrate the work: merge, PR, or cleanup.
 
 ---
 
