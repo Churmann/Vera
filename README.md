@@ -8,6 +8,14 @@ Search a product by name or scan its barcode, and you get a transparent, evidenc
 
 ---
 
+## Screenshots
+
+| Product score | Per-nutrient transparency bars | Barcode scan |
+|---|---|---|
+| ![Product score page showing the overall score and Negatives / Positives breakdown](docs/screenshots/score.png) | ![Per-nutrient bars for sugar, salt, saturated fat, fibre, protein and energy on sourced thresholds](docs/screenshots/nutrient-bars.png) | ![Barcode scan page](docs/screenshots/scan.png) |
+
+---
+
 ## The problem
 
 Apps like Yuka made food scoring mainstream, but they share a set of well-documented flaws:
