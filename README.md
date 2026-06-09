@@ -28,6 +28,8 @@ Vera is built around one principle: **a food score is only useful if you can see
 ## What it does
 
 - **Transparent scoring across three dimensions** — Nutrition, Additives, and Processing Level, each scored 0–100 and combined into a single overall score.
+- **Plain-language labels with "what this means"** — each dimension leads with an everyday classification (e.g. "Excellent", "Poor", "Ultra-processed") rather than jargon, with the technical term kept alongside and a one-line explanation of what the metric actually measures, surfaced behind an info icon and in the expanded detail.
+- **Per-nutrient transparency bars** — inside the Nutritional Quality detail, sugar, salt, saturated fat, fibre, protein, and energy are shown per 100 g (per 100 ml for drinks) on sourced low→high scales. Sugar, salt, and saturated fat use the UK FSA front-of-pack thresholds — with separate food and drink columns — fibre uses the EU nutrition-claim thresholds, and protein and energy are shown neutrally where no official threshold exists. A nutrient with a reported value of zero reads "0 g"; one Open Food Facts has no value for reads "Not provided" — the two are never conflated. The bars are a read-only transparency layer beneath the Nutri-Score and never change the score. It's a deliberate step beyond apps like Yuka, whose nutrient thresholds aren't disclosed.
 - **Negatives / Positives breakdown** — every factor is grouped into what's hurting the score and what's helping it, each row expandable to show the detail.
 - **Per-additive evidence cards** — each E-number is looked up in a curated database and shown with an evidence summary, dose/context note, and a source link (primarily EFSA opinions and peer-reviewed studies) — so you can read the reasoning, not just accept the flag.
 - **Better-alternatives recommendations** — for any product, Vera finds higher-quality options in the same category and tells you *why* each is better ("Better nutrition (Nutri-Score B vs D)", "Less processed (NOVA 2 vs 4)", "Cleaner additives") — and never recommends a product whose data is incomplete.
@@ -89,6 +91,7 @@ app/
   off_client.py      Open Food Facts client (search, fetch, normalise, cache, retry)
   additive_db.py     merges OFF taxonomy + curated evidence at startup
   alternatives.py    same-category better-alternative recommendations
+  nutrition_bars.py  per-nutrient transparency bars (FSA / EU thresholds)
   presentation.py    groups factors into Negatives / Positives rows
   scoring/           NutritionScorer, AdditiveScorer, NovaScorer, FoodScoringEngine
 data/                additive taxonomy (JSON) + curated evidence (YAML)
@@ -161,7 +164,7 @@ OFF_CACHE_TTL=300
 ## Tests
 
 ```bash
-pytest                  # 165 Python tests
+pytest                  # 208 Python tests
 node --test tests/js/   # JavaScript unit tests (no extra dependencies)
 ```
 
