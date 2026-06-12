@@ -41,6 +41,8 @@ class NutritionScorer:
         if grade in ("A", "B"):
             positives.append("Good overall nutritional balance.")
 
+        panel = build_nutrient_bars(product)
+
         return DimensionScore(
             id="nutrition",
             label="Nutritional Quality",
@@ -53,6 +55,8 @@ class NutritionScorer:
             flags=[],
             plain_band=_PLAIN_BAND[grade],
             meaning=_MEANING,
-            nutrient_bars=build_nutrient_bars(product),
+            nutrient_bars=panel.bars,
             nutrient_basis=("per 100 ml" if product.is_beverage else "per 100 g"),
+            nutrient_note=panel.note,
+            nutrient_missing_summary=panel.missing_summary,
         )

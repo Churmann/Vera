@@ -102,6 +102,11 @@ class DimensionScore:
     meaning: str = ""
     nutrient_bars: list[NutrientBar] = field(default_factory=list)
     nutrient_basis: str = ""   # "per 100 g" | "per 100 ml" | ""
+    # Calm explanation of crowd-sourced data gaps. ``nutrient_note`` accompanies a
+    # few no-data rows; ``nutrient_missing_summary`` replaces them with one honest
+    # line when most/all values are absent (mutually exclusive in practice).
+    nutrient_note: str = ""
+    nutrient_missing_summary: str = ""
 
 
 @dataclass

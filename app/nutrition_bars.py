@@ -7,7 +7,34 @@ the EU Reg. 1924/2006 nutrition-claim thresholds; protein and energy are shown
 neutrally because no recognised per-100g threshold exists for them.
 """
 
+from dataclasses import dataclass, field
+
 from app.models import NormalisedProduct, NutrientBar
+
+
+@dataclass
+class NutrientPanel:
+    """Everything the Nutritional Quality section needs to render per-nutrient detail.
+
+    ``bars`` are the rows to draw. When only a few values are missing they include
+    explicit "no data" rows (so the gap reads as deliberate); when most are missing
+    those rows are dropped in favour of a single honest ``missing_summary`` line.
+    ``note`` is the calm one-liner shown beneath the bars in the partial case.
+    """
+    bars: list[NutrientBar] = field(default_factory=list)
+    note: str = ""
+    missing_summary: str = ""
+
+
+# When at least this many of the six nutrients are absent, the section is mostly
+# empty: collapse the gaps into one summary line instead of several no-data rows.
+_COLLAPSE_WHEN_MISSING = 4
+
+_MISSING_NOTE = (
+    "Some values haven't been entered for this product on Open Food Facts, "
+    "so only the reported nutrients are shown."
+)
+_ALL_MISSING = "No nutrient values have been entered for this product on Open Food Facts."
 
 # FSA front-of-pack cutoffs as (low_max, high_min). Foods per 100 g; drinks per
 # 100 ml. Low = value <= low_max; High = value > high_min; Medium is between.
@@ -117,22 +144,51 @@ def _missing_bar(key, label, unit) -> NutrientBar:
     )
 
 
-def build(product: NormalisedProduct) -> list[NutrientBar]:
-    """Build the per-nutrient bars for a product. Returns [] when none of the
-    six target nutrients are present (the page then shows a single honest line)."""
+def _join_and(names: list[str]) -> str:
+    """Grammatical list: ['a'] -> 'a'; ['a','b'] -> 'a and b'; ['a','b','c'] -> 'a, b and c'."""
+    if len(names) == 1:
+        return names[0]
+    return f"{', '.join(names[:-1])} and {names[-1]}"
+
+
+def _missing_sentence(labels: list[str]) -> str:
+    """One honest line naming the absent nutrients (used when most are missing)."""
+    joined = _join_and(labels)
+    verb = "hasn't" if len(labels) == 1 else "haven't"
+    return f"{joined[:1].upper()}{joined[1:]} {verb} been entered for this product on Open Food Facts."
+
+
+def build(product: NormalisedProduct) -> NutrientPanel:
+    """Build the per-nutrient panel for a product.
+
+    Reported nutrients always render as real bars. Missing ones are presented
+    honestly: a few gaps become explicit "no data" rows plus a short note; most
+    or all gaps collapse into one summary line so the section never reads as a
+    row of empty, broken-looking bars."""
     n = product.nutriments
     thresholds = _FSA_DRINK if product.is_beverage else _FSA_FOOD
-    bars: list[NutrientBar] = []
+    ordered: list[NutrientBar] = []
+    missing_labels: list[str] = []
     for key, label, unit, kind in _SPEC:
         if key not in n:
-            bars.append(_missing_bar(key, label, unit))
+            ordered.append(_missing_bar(key, label, unit))
+            missing_labels.append(label.lower())
         elif kind == "negative":
             low_max, high_min = thresholds[key]
-            bars.append(_negative_bar(key, label, unit, n[key], low_max, high_min))
+            ordered.append(_negative_bar(key, label, unit, n[key], low_max, high_min))
         elif kind == "higher_better":
-            bars.append(_fibre_bar(n[key]))
+            ordered.append(_fibre_bar(n[key]))
         else:
-            bars.append(_neutral_bar(key, label, unit, n[key]))
-    if all(b.kind == "missing" for b in bars):
-        return []
-    return bars
+            ordered.append(_neutral_bar(key, label, unit, n[key]))
+
+    missing_count = len(missing_labels)
+    present = [b for b in ordered if b.present]
+
+    if missing_count == 0:
+        return NutrientPanel(bars=ordered)
+    if not present:  # every value absent
+        return NutrientPanel(missing_summary=_ALL_MISSING)
+    if missing_count >= _COLLAPSE_WHEN_MISSING:
+        return NutrientPanel(bars=present, missing_summary=_missing_sentence(missing_labels))
+    # A few gaps: keep them as explicit, clearly-styled no-data rows in reading order.
+    return NutrientPanel(bars=ordered, note=_MISSING_NOTE)

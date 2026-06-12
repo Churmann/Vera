@@ -4,7 +4,7 @@ from app.nutrition_bars import build
 
 
 def _bars(make_product, **kw):
-    return {b.key: b for b in build(make_product(**kw))}
+    return {b.key: b for b in build(make_product(**kw)).bars}
 
 
 def test_food_sugar_bands(make_product):
@@ -69,18 +69,59 @@ def test_protein_and_energy_are_neutral(make_product):
     assert bars["energy_kcal"].unit == "kcal"
 
 
-def test_missing_nutrient_emits_missing_bar(make_product):
-    bars = _bars(make_product, nutriments={"sugars": 2.0})
-    assert bars["salt"].kind == "missing"
-    assert bars["salt"].present is False
-
-
-def test_all_missing_returns_empty_list(make_product):
-    assert build(make_product(nutriments={})) == []
-
-
 def test_order_is_fixed(make_product):
     keys = [b.key for b in build(make_product(nutriments={
         "sugars": 1, "salt": 1, "saturated_fat": 1, "fibre": 1, "protein": 1, "energy_kcal": 1,
-    }))]
+    })).bars]
     assert keys == ["sugars", "salt", "saturated_fat", "fibre", "protein", "energy_kcal"]
+
+
+def test_complete_product_has_no_missing_note_or_summary(make_product):
+    panel = build(make_product(nutriments={
+        "sugars": 1, "salt": 1, "saturated_fat": 1, "fibre": 1, "protein": 1, "energy_kcal": 1,
+    }))
+    assert all(b.present for b in panel.bars)
+    assert panel.note == ""
+    assert panel.missing_summary == ""
+
+
+def test_a_few_missing_keeps_individual_no_data_rows_and_adds_note(make_product):
+    # The Wrigley's gum shape: sugar/protein/energy reported, salt/sat fat/fibre absent.
+    panel = build(make_product(nutriments={"sugars": 0, "protein": 0, "energy_kcal": 23.9}))
+    by_key = {b.key: b for b in panel.bars}
+    # All six still appear, in fixed order, the three gaps as explicit no-data rows.
+    assert [b.key for b in panel.bars] == [
+        "sugars", "salt", "saturated_fat", "fibre", "protein", "energy_kcal"]
+    assert by_key["salt"].kind == "missing" and by_key["salt"].present is False
+    assert by_key["fibre"].present is False
+    # An honest note explains the gap; no collapsed summary in the partial case.
+    assert "Open Food Facts" in panel.note
+    assert panel.missing_summary == ""
+
+
+def test_three_missing_is_the_partial_boundary_not_collapsed(make_product):
+    panel = build(make_product(nutriments={"sugars": 1, "protein": 1, "energy_kcal": 1}))
+    assert any(b.kind == "missing" for b in panel.bars)
+    assert panel.missing_summary == ""
+    assert panel.note != ""
+
+
+def test_most_missing_collapses_to_one_summary_naming_the_gaps(make_product):
+    # Four of six absent -> the section is mostly empty, so collapse the gaps.
+    panel = build(make_product(nutriments={"sugars": 1, "protein": 1}))
+    assert all(b.present for b in panel.bars)          # only the two real bars remain
+    assert not any(b.kind == "missing" for b in panel.bars)
+    assert panel.note == ""
+    summary = panel.missing_summary
+    assert summary and summary.endswith("Open Food Facts.")
+    for word in ("salt", "saturated fat", "fibre", "energy"):
+        assert word in summary.lower()
+    # Reads as a sentence: the first nutrient is capitalised.
+    assert summary[0].isupper()
+
+
+def test_all_missing_collapses_to_summary_with_no_bars(make_product):
+    panel = build(make_product(nutriments={}))
+    assert panel.bars == []
+    assert panel.missing_summary != ""
+    assert panel.note == ""
