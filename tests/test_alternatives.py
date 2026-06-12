@@ -247,12 +247,27 @@ def test_ordered_category_tags_most_specific_first():
 
 def test_ordered_category_tags_drops_too_generic_categories():
     """Generic roots that mix unrelated product types (drinks with food) must never be
-    searched — they are what surfaced juice/tea/yogurt as 'alternatives' to a cola."""
+    searched — they are what surfaced juice/tea/yogurt as 'alternatives' to a cola.
+
+    en:carbonated-drinks is also dropped: it's a cross-cutting *property* grouping
+    (cola, tonic, sparkling water, energy drinks are all 'carbonated') and so cannot
+    define a same kind. Only the genuine kind tags en:colas/en:sodas survive."""
     cats = [
         "en:beverages-and-beverages-preparations", "en:beverages",
         "en:carbonated-drinks", "en:sodas", "en:colas",
     ]
-    assert _ordered_category_tags(cats) == ["en:colas", "en:sodas", "en:carbonated-drinks"]
+    assert _ordered_category_tags(cats) == ["en:colas", "en:sodas"]
+
+
+def test_ordered_category_tags_drops_beverage_property_groupings():
+    """Property/negation beverage groupings (carbonated / sweetened / non-alcoholic)
+    span fundamentally different drink kinds, so they must never be searched or anchor
+    a match — only en:colas/en:sodas are real kinds here."""
+    cats = [
+        "en:beverages", "en:carbonated-drinks", "en:non-alcoholic-beverages",
+        "en:sodas", "en:colas", "en:sweetened-beverages",
+    ]
+    assert _ordered_category_tags(cats) == ["en:colas", "en:sodas"]
 
 
 @respx.mock
@@ -340,6 +355,56 @@ async def test_only_generic_categories_returns_empty_without_searching(engine, c
     route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": []}))
     alts = await find_better_alternatives(
         client, engine, _current(["en:snacks", "en:sweet-snacks", "en:confectioneries"]), current_score=50)
+    await client.aclose()
+    assert alts == []
+    assert route.call_count == 0
+
+
+@respx.mock
+async def test_pepsi_rejects_property_tag_cross_kinds_keeps_real_sodas(engine, client):
+    """Regression (the Pepsi bug): sparkling water, energy drinks and iced tea shared
+    only cross-cutting property/negation groupings with Pepsi — sparkling water via
+    en:carbonated-drinks, the energy drink via en:sweetened-beverages, the iced tea via
+    en:non-alcoholic-beverages. Now those groupings can't anchor a same kind, so only
+    genuine colas/sodas (Coke Zero, Fanta) remain."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        _hit("cokezero", "a", 1), _hit("fanta", "a", 1),
+        _hit("sparkwater", "a", 1), _hit("energy", "a", 1), _hit("icedtea", "a", 1),
+    ]}))
+    _mock_product("cokezero", "a", 1,
+                  cats=["en:beverages", "en:carbonated-drinks", "en:sodas", "en:colas", "en:diet-sodas"])
+    _mock_product("fanta", "a", 1,
+                  cats=["en:beverages", "en:carbonated-drinks", "en:sodas", "en:orange-sodas"])
+    _mock_product("sparkwater", "a", 1,
+                  cats=["en:beverages", "en:carbonated-drinks", "en:carbonated-waters", "en:waters"])
+    _mock_product("energy", "a", 1,
+                  cats=["en:beverages", "en:sweetened-beverages", "en:carbonated-drinks", "en:energy-drinks"])
+    _mock_product("icedtea", "a", 1,
+                  cats=["en:beverages", "en:non-alcoholic-beverages", "en:sweetened-beverages", "en:iced-teas"])
+    pepsi = _current(
+        ["en:beverages-and-beverages-preparations", "en:beverages", "en:carbonated-drinks",
+         "en:non-alcoholic-beverages", "en:sodas", "en:colas", "en:sweetened-beverages"],
+        nutri="E", nova=4)
+    alts = await find_better_alternatives(client, engine, pepsi, current_score=40)
+    await client.aclose()
+    ids = [a.off_id for a in alts]
+    assert "sparkwater" not in ids
+    assert "energy" not in ids
+    assert "icedtea" not in ids
+    assert ids == ["cokezero", "fanta"]  # both score 100, tie broken by off_id
+
+
+@respx.mock
+async def test_only_property_grouping_tags_returns_empty_without_searching(engine, client):
+    """Precision over recall: a drink tagged only with cross-cutting property/negation
+    groupings (no real kind tag) has no same-kind anchor, so it returns the honest empty
+    state rather than matching unrelated drinks — and never even searches."""
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": []}))
+    alts = await find_better_alternatives(
+        client, engine,
+        _current(["en:beverages", "en:carbonated-drinks", "en:non-alcoholic-beverages",
+                  "en:sweetened-beverages"]),
+        current_score=50)
     await client.aclose()
     assert alts == []
     assert route.call_count == 0

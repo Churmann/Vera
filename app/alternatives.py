@@ -208,6 +208,21 @@ _TOO_GENERIC_TAGS = frozenset({
     # "Bars" spans cereal bars, chocolate bars and protein bars — too mixed to
     # establish same-kind on its own (real pairs share e.g. en:cereal-bars).
     "en:bars",
+    # Cross-cutting beverage groupings defined by a *property* (carbonation,
+    # sweetness, temperature) or by *negation* (non-alcoholic) rather than by kind.
+    # Cola, tonic, sparkling water, iced tea and energy drinks all share several of
+    # these, so they let unrelated drinks pose as the same kind — sparkling water
+    # matched Pepsi on en:carbonated-drinks alone. Real kinds (en:colas, en:sodas,
+    # en:diet-sodas, en:energy-drinks, en:iced-teas, …) are unaffected. All verified
+    # present in the OFF categories taxonomy.
+    "en:carbonated-drinks",
+    "en:sweetened-beverages",
+    "en:non-alcoholic-beverages",
+    "en:artificially-sweetened-beverages",
+    "en:diet-beverages",
+    "en:hot-beverages",
+    "en:flavoured-drinks",
+    "en:plant-based-beverages",
 })
 
 # A canonical OFF category tag is an ``en:`` prefix followed by a lowercase,
