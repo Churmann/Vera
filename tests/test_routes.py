@@ -299,22 +299,22 @@ def test_product_page_caps_many_low_risk_additives_but_shows_all_negatives():
 
 @respx.mock
 def test_unnamed_additive_does_not_double_the_e_number():
-    """An unclassified additive (no name) should show its E-number once, not 'E338 (E338)'."""
+    """An unclassified additive (no name) should show its E-number once, not 'E999 (E999)'."""
     respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
         return_value=httpx.Response(200, json={"product": {
             "product_name": "Mystery Drink", "brands": "TestCo",
             "nutriscore_grade": "e", "nova_group": 4,
-            "additives_tags": ["en:e338"],  # not in our DB -> name falls back to E338
+            "additives_tags": ["en:e999"],  # not in our DB -> name falls back to E999
             "ingredients_text": "Water", "image_url": None,
         }})
     )
     with TestClient(app) as client:
         response = client.get("/product/3017620422003")
     text = response.text
-    # The label already is "E338"; the parenthesised enum span must be suppressed
-    # so the visible row reads "E338", not "E338 (E338)".
-    assert "(E338)" not in text
-    assert "E338" in text
+    # The label already is "E999"; the parenthesised enum span must be suppressed
+    # so the visible row reads "E999", not "E999 (E999)".
+    assert "(E999)" not in text
+    assert "E999" in text
 
 
 @respx.mock

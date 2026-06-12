@@ -176,10 +176,9 @@ e202:
 e270:
   name: "Lactic acid"
   risk_level: "low"
-  evidence_summary: "Lactic acid (E 270) is an acidity regulator that occurs naturally in fermented foods and in the body as a normal product of metabolism. It is widely regarded as low concern."
+  evidence_summary: "Lactic acid (E 270) is an acidity regulator that occurs naturally in fermented foods and in the body as a normal product of metabolism. JECFA assigned it an ADI 'not limited' (1973, reaffirmed 2001) — the category reserved for substances of very low concern. EFSA's own re-evaluation of the free organic acids is still in progress."
   dose_context: "Lactic acid is not used in foods for young infants because they metabolise the D-isomer poorly — a formulation consideration, not a general toxicity concern."
-  source_url: ""
-  note: "SOURCE NEEDED — the 2020 EFSA opinion pub/6032 covers the E 472a-f ESTERS (E 472b is the lactic acid ester), NOT free lactic acid (E 270). No standalone EFSA food-additive re-evaluation of free lactic acid / lactates (E 325-327) could be confirmed; the organic-acids re-evaluation appears not yet completed."
+  source_url: "https://www.inchem.org/documents/jecfa/jeceval/jec_1252.htm"
 
 e296:
   name: "Malic acid"
@@ -214,18 +213,16 @@ e322:
 e330:
   name: "Citric acid"
   risk_level: "low"
-  evidence_summary: "Citric acid (E 330) is among the most common acidity regulators, occurring naturally in citrus fruit and central to the body's energy (Krebs) cycle. It is widely regarded as low concern."
+  evidence_summary: "Citric acid (E 330) is among the most common acidity regulators, occurring naturally in citrus fruit and central to the body's energy (Krebs) cycle. JECFA evaluated citric acid together with its calcium, potassium and sodium salts and assigned an ADI 'not limited' — the category reserved for substances of very low toxicity that are normal food constituents or metabolites. EFSA's own re-evaluation of the free acid is still in progress."
   dose_context: "Like other food acids, frequent exposure can contribute to dental enamel erosion — a local effect, not systemic toxicity."
-  source_url: ""
-  note: "SOURCE NEEDED — the 2020 EFSA opinion pub/6032 covers the E 472a-f ESTERS (E 472c is the citric acid ester), NOT free citric acid (E 330). No standalone EFSA food-additive re-evaluation of free citric acid / citrates (E 330-333) could be confirmed; the organic-acids re-evaluation appears not yet completed."
+  source_url: "https://www.inchem.org/documents/jecfa/jecmono/v05je24.htm"
 
 e331:
   name: "Sodium citrates"
   risk_level: "low"
-  evidence_summary: "Sodium citrates (E 331) are the sodium salts of citric acid, used as acidity regulators, emulsifying salts and sequestrants. As salts of a normal metabolite they are generally regarded as low concern, similar to citric acid itself (E 330)."
-  dose_context: "A completed standalone EFSA re-evaluation opinion for E 331 could not be confirmed at the time of writing. The closest confirmed EFSA opinion is the 2020 re-evaluation of citric acid (E 330)."
-  source_url: ""
-  note: "SOURCE NEEDED — could not confirm a dedicated EFSA re-evaluation opinion specifically for sodium citrates (E 331). Verify whether E 331 is covered within the citric acid opinion or a separate one."
+  evidence_summary: "Sodium citrates (E 331) are the sodium salts of citric acid, used as acidity regulators, emulsifying salts and sequestrants. JECFA assessed citric acid together with its sodium, potassium and calcium salts and assigned the group an ADI 'not limited', reflecting their status as salts of a normal metabolite. EFSA's own re-evaluation of citric acid and citrates is still in progress."
+  dose_context: "As salts of a normal metabolite, sodium citrates are of low toxicological concern; the main practical consideration is their contribution to dietary sodium."
+  source_url: "https://www.inchem.org/documents/jecfa/jecmono/v05je24.htm"
 
 e412:
   name: "Guar gum"
@@ -265,10 +262,9 @@ e472e:
 e500:
   name: "Sodium carbonates"
   risk_level: "low"
-  evidence_summary: "Sodium carbonates (E 500) — including sodium carbonate and sodium bicarbonate (baking soda) — are acidity regulators and raising agents. They are simple, well-characterised salts long regarded as low concern; bicarbonate is a normal physiological buffer in the body."
-  dose_context: "The main practical consideration is the contribution to dietary sodium rather than toxicity of the carbonate itself. A completed standalone EFSA re-evaluation opinion for E 500 could not be confirmed at the time of writing."
-  source_url: ""
-  note: "SOURCE NEEDED — could not confirm a dedicated EFSA food-additive re-evaluation opinion for sodium carbonates (E 500); only food-contact-material opinions were found. Verify the status of the E 500 re-evaluation."
+  evidence_summary: "Sodium carbonates (E 500) — sodium carbonate and sodium bicarbonate (baking soda) — are acidity regulators and raising agents. JECFA assigned sodium carbonate an ADI 'not limited'; bicarbonate is a normal physiological buffer in the body. (This is an older JECFA evaluation; EFSA has not published a dedicated re-evaluation.)"
+  dose_context: "The main practical consideration is the contribution to dietary sodium rather than toxicity of the carbonate itself."
+  source_url: "https://www.inchem.org/documents/jecfa/jeceval/jec_2137.htm"
 
 e551:
   name: "Silicon dioxide (silica)"
@@ -442,10 +438,9 @@ e334:
 e385:
   name: "Calcium disodium EDTA"
   risk_level: "low"
-  evidence_summary: "Calcium disodium EDTA (E 385) is a sequestrant that binds metal ions to protect colour and flavour, used in some canned foods, sauces and dressings."
-  dose_context: "EDTA can bind dietary minerals; EU rules restrict its use to specific foods at low levels."
-  source_url: ""
-  note: "SOURCE NEEDED — EFSA's re-evaluation of E 385 is still in progress; a call for data was issued with a deadline in December 2024 and no completed EFSA opinion has been confirmed."
+  evidence_summary: "Calcium disodium EDTA (E 385) is a sequestrant that binds metal ions to protect colour and flavour, used in some canned foods, sauces and dressings. JECFA established an ADI of 0-2.5 mg/kg bw (expressed as calcium disodium EDTA). EFSA's own re-evaluation of E 385 is still in progress."
+  dose_context: "EDTA can bind dietary minerals, so EU rules restrict its use to specific foods at low levels; at those levels intake stays within the JECFA ADI."
+  source_url: "https://www.inchem.org/documents/jecfa/jeceval/jec_311.htm"
 
 e392:
   name: "Extracts of rosemary"
@@ -499,10 +494,9 @@ e417:
 e420:
   name: "Sorbitol"
   risk_level: "low"
-  evidence_summary: "Sorbitol (E 420) is a sugar alcohol (polyol) used as a sweetener and humectant; like other polyols it is incompletely absorbed."
+  evidence_summary: "Sorbitol (E 420) is a sugar alcohol (polyol) used as a sweetener and humectant; like other polyols it is incompletely absorbed. JECFA assigned it an ADI 'not specified', its safest category. EFSA's re-evaluation of the polyols is ongoing."
   dose_context: "Polyols can cause bloating, wind and a laxative effect in large amounts; EU labels carry a warning to that effect."
-  source_url: ""
-  note: "SOURCE NEEDED — sorbitol (E 420) is part of EFSA's ongoing re-evaluation of sweeteners (a call for genotoxicity data closed in early 2024); no completed EFSA opinion URL confirmed."
+  source_url: "https://inchem.org/documents/jecfa/jeceval/jec_2187.htm"
 
 e421:
   name: "Mannitol"
@@ -550,26 +544,23 @@ e553b:
 e575:
   name: "Glucono-delta-lactone"
   risk_level: "low"
-  evidence_summary: "Glucono-delta-lactone (E 575) is an acidity regulator and raising-agent acid that converts to gluconic acid in water; gluconic acid is a normal metabolite. It is used, for example, in baking powders and some meat and tofu products."
-  dose_context: "It is widely regarded as low concern at the levels used in food."
-  source_url: ""
-  note: "SOURCE NEEDED — EFSA's re-evaluation of gluconic acid (E 574) and related additives (E 575-579) is still in progress (call for data); no completed EFSA opinion URL confirmed."
+  evidence_summary: "Glucono-delta-lactone (E 575) is an acidity regulator and raising-agent acid that converts to gluconic acid in water; gluconic acid is a normal metabolite. JECFA assigned a group ADI 'not specified' to glucono-delta-lactone and the gluconate salts. EFSA's own re-evaluation of gluconic acid and related additives (E 574-579) is ongoing."
+  dose_context: "It is widely regarded as low concern at the levels used in food — for example in baking powders, some meat products and tofu."
+  source_url: "https://inchem.org/documents/jecfa/jeceval/jec_912.htm"
 
 e627:
   name: "Disodium guanylate"
   risk_level: "low"
-  evidence_summary: "Disodium guanylate (E 627) is a ribonucleotide flavour enhancer, usually used together with glutamate (E 621) to boost savoury (umami) taste."
+  evidence_summary: "Disodium guanylate (E 627) is a ribonucleotide flavour enhancer, usually used together with glutamate (E 621) to boost savoury (umami) taste. JECFA assigned it an ADI 'not specified'. EFSA's own re-evaluation of the ribonucleotides is still in progress."
   dose_context: "It is used at low levels and metabolised like other dietary nucleotides; purine content is a consideration only for people specifically advised to limit purine intake."
-  source_url: ""
-  note: "SOURCE NEEDED — EFSA's re-evaluation of ribonucleotides (E 626-635) is still in progress (call for data); no completed EFSA opinion URL confirmed."
+  source_url: "https://inchem.org/documents/jecfa/jeceval/jec_668.htm"
 
 e631:
   name: "Disodium inosinate"
   risk_level: "low"
-  evidence_summary: "Disodium inosinate (E 631) is a ribonucleotide flavour enhancer, typically combined with glutamate (E 621) to intensify savoury taste."
+  evidence_summary: "Disodium inosinate (E 631) is a ribonucleotide flavour enhancer, typically combined with glutamate (E 621) to intensify savoury taste. JECFA assigned it an ADI 'not specified'. EFSA's own re-evaluation of the ribonucleotides is still in progress."
   dose_context: "Used at low levels and metabolised like other dietary nucleotides; relevant to purine intake only for people specifically advised to limit it."
-  source_url: ""
-  note: "SOURCE NEEDED — EFSA's re-evaluation of ribonucleotides (E 626-635) is still in progress (call for data); no completed EFSA opinion URL confirmed."
+  source_url: "https://inchem.org/documents/jecfa/jeceval/jec_670.htm"
 
 e901:
   name: "Beeswax"
@@ -595,18 +586,16 @@ e904:
 e965:
   name: "Maltitol"
   risk_level: "low"
-  evidence_summary: "Maltitol (E 965) is a sugar alcohol (polyol) used as a bulk sweetener; it is partially absorbed and partially fermented in the gut."
+  evidence_summary: "Maltitol (E 965) is a sugar alcohol (polyol) used as a bulk sweetener; it is partially absorbed and partially fermented in the gut. JECFA assigned it an ADI 'not specified'. EFSA's re-evaluation of the polyols is ongoing."
   dose_context: "As with other polyols, excess intake can cause bloating and a laxative effect; EU labels carry a warning."
-  source_url: ""
-  note: "SOURCE NEEDED — maltitol (E 965) is part of EFSA's ongoing re-evaluation of sweeteners (call for data); no completed EFSA opinion URL confirmed."
+  source_url: "https://inchem.org/documents/jecfa/jeceval/jec_1315.htm"
 
 e967:
   name: "Xylitol"
   risk_level: "low"
-  evidence_summary: "Xylitol (E 967) is a sugar alcohol (polyol) used as a sweetener, notable for not promoting tooth decay; it is incompletely absorbed."
+  evidence_summary: "Xylitol (E 967) is a sugar alcohol (polyol) used as a sweetener, notable for not promoting tooth decay; it is incompletely absorbed. JECFA assigned it an ADI 'not specified'. EFSA's re-evaluation of the polyols is ongoing."
   dose_context: "Excess intake can have a laxative effect; EU labels carry a warning. (Xylitol is toxic to dogs, though that is not a human-safety issue.)"
-  source_url: ""
-  note: "SOURCE NEEDED — xylitol (E 967) is part of EFSA's ongoing re-evaluation of sweeteners; no completed EFSA opinion URL confirmed."
+  source_url: "https://inchem.org/documents/jecfa/jeceval/jec_2404.htm"
 
 e968:
   name: "Erythritol"
@@ -614,3 +603,251 @@ e968:
   evidence_summary: "Erythritol (E 968) is a sugar alcohol (polyol) produced by fermentation. EFSA's 2023 re-evaluation found no genotoxicity or other systemic safety concern, identifying gut tolerance (diarrhoea) at high intakes as the main effect."
   dose_context: "EFSA identified a NOAEL for diarrhoea of about 0.5 g/kg bw. Unlike most polyols it is largely absorbed and excreted unchanged in urine. (Some 2023 observational research has raised questions about cardiovascular markers; this was not part of EFSA's additive assessment.)"
   source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/8430"
+
+e200:
+  name: "Sorbic acid"
+  risk_level: "low"
+  evidence_summary: "Sorbic acid (E 200) is a preservative active against moulds and yeasts, and the parent acid of the sorbates (E 202, E 203). EFSA's 2015 re-evaluation found no evidence of genotoxicity or carcinogenicity and set a group ADI of 11 mg/kg bw/day (expressed as sorbic acid) covering E 200, E 202 and E 203."
+  dose_context: "EFSA noted that intake could exceed the ADI at the upper end of estimates for high consumers, especially children, prompting a follow-up review. For typical consumers, exposure is within the ADI."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4144"
+
+e252:
+  name: "Potassium nitrate"
+  risk_level: "moderate"
+  evidence_summary: "Potassium nitrate (E 252) is a curing preservative, re-evaluated by EFSA in 2017 together with sodium nitrate (E 251). Nitrate itself is of low toxicity, but part of it is converted to nitrite in the body, which can react with amines to form nitrosamines. EFSA confirmed an ADI of 3.7 mg nitrate/kg bw/day."
+  dose_context: "Most dietary nitrate comes from vegetables and drinking water rather than additives. The concern relates to endogenous conversion to nitrite rather than nitrate itself."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4787"
+
+e1422:
+  name: "Acetylated distarch adipate"
+  risk_level: "low"
+  evidence_summary: "Acetylated distarch adipate (E 1422) is a chemically modified starch used as a thickener and stabiliser (e.g. in canned, chilled and convenience foods). EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found they are not absorbed intact but hydrolysed and fermented in the gut, raised no genotoxicity concern, and concluded there is no safety concern at the reported uses; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA found no safety concern for the general population at reported use levels. Modified starches are handled by the body much like ordinary dietary starch."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1450:
+  name: "Starch sodium octenyl succinate"
+  risk_level: "low"
+  evidence_summary: "Starch sodium octenyl succinate (E 1450) is a modified starch used as an emulsifier and stabiliser (for example in drinks and to encapsulate flavours). EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary."
+  dose_context: "EFSA noted that the available data did not allow an adequate safety assessment of E 1450 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+# ---- Modified starches (E 1404-E 1452) ----
+# All covered by EFSA's 2017 group re-evaluation (pub/4911): not absorbed intact
+# but hydrolysed and fermented in the gut, no genotoxicity concern, ADI 'not
+# specified', no safety concern at reported uses for the general population.
+e1404:
+  name: "Oxidised starch"
+  risk_level: "low"
+  evidence_summary: "Oxidised starch (E 1404) is a modified starch used as a thickener and stabiliser. EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found they are not absorbed intact but hydrolysed and fermented in the gut, raised no genotoxicity concern, and concluded there is no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1404 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1410:
+  name: "Monostarch phosphate"
+  risk_level: "low"
+  evidence_summary: "Monostarch phosphate (E 1410) is a modified starch used as a thickener and stabiliser. EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1410 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1412:
+  name: "Distarch phosphate"
+  risk_level: "low"
+  evidence_summary: "Distarch phosphate (E 1412) is a widely used modified starch (thickener and stabiliser, e.g. in sauces, soups and canned foods). EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1412 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1413:
+  name: "Phosphated distarch phosphate"
+  risk_level: "low"
+  evidence_summary: "Phosphated distarch phosphate (E 1413) is a modified starch used as a thickener and stabiliser. EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1413 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1414:
+  name: "Acetylated distarch phosphate"
+  risk_level: "low"
+  evidence_summary: "Acetylated distarch phosphate (E 1414) is a very common modified starch (thickener and stabiliser in sauces, ready meals and dairy desserts). EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1414 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1420:
+  name: "Acetylated starch"
+  risk_level: "low"
+  evidence_summary: "Acetylated starch (E 1420) is a modified starch used as a thickener and stabiliser. EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1420 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1440:
+  name: "Hydroxypropyl starch"
+  risk_level: "low"
+  evidence_summary: "Hydroxypropyl starch (E 1440) is a modified starch used as a thickener and stabiliser. EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and concluded there is no safety concern at the reported uses; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA found no safety concern for the general population at reported use levels. Modified starches are handled by the body much like ordinary dietary starch."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1442:
+  name: "Hydroxypropyl distarch phosphate"
+  risk_level: "low"
+  evidence_summary: "Hydroxypropyl distarch phosphate (E 1442) is a common modified starch (thickener and stabiliser, e.g. in dairy desserts, sauces and canned foods). EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and concluded there is no safety concern at the reported uses; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA found no safety concern for the general population at reported use levels. Modified starches are handled by the body much like ordinary dietary starch."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+e1451:
+  name: "Acetylated oxidised starch"
+  risk_level: "low"
+  evidence_summary: "Acetylated oxidised starch (E 1451) is a modified starch used as a thickener and stabiliser. EFSA's 2017 re-evaluation of the modified starches (E 1404-E 1452) found them hydrolysed and fermented in the gut with no genotoxicity concern, and no safety concern at the reported uses for the general population; no numerical ADI was considered necessary (ADI 'not specified')."
+  dose_context: "EFSA could not adequately assess safety for E 1451 specifically in foods for special medical purposes for infants and young children at the maximum permitted levels — a gap for that narrow use, not a general-population concern."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/4911"
+
+# ---- Phosphoric acid and phosphates (E 338-341, E 343, E 450-452) ----
+# All covered by EFSA's 2019 group re-evaluation (pub/5674): group ADI of
+# 40 mg/kg bw/day expressed as phosphorus; not genotoxic or carcinogenic; the
+# concern is total phosphorus intake, which can exceed the ADI in children and
+# matters most for people with reduced kidney function.
+e338:
+  name: "Phosphoric acid"
+  risk_level: "moderate"
+  evidence_summary: "Phosphoric acid (E 338) is an acidity regulator, used notably in cola drinks. EFSA's 2019 re-evaluation of the phosphates set, for the first time, a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake rather than this additive specifically."
+  dose_context: "EFSA estimated that dietary exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e339:
+  name: "Sodium phosphates"
+  risk_level: "moderate"
+  evidence_summary: "Sodium phosphates (E 339) are acidity regulators, emulsifying salts and stabilisers. EFSA's 2019 re-evaluation of the phosphates set a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function; sodium phosphates also add to dietary sodium."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e340:
+  name: "Potassium phosphates"
+  risk_level: "moderate"
+  evidence_summary: "Potassium phosphates (E 340) are acidity regulators, emulsifying salts and stabilisers. EFSA's 2019 re-evaluation of the phosphates set a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e341:
+  name: "Calcium phosphates"
+  risk_level: "moderate"
+  evidence_summary: "Calcium phosphates (E 341) are used as raising agents, anti-caking agents, firming agents and acidity regulators. EFSA's 2019 re-evaluation of the phosphates set a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e343:
+  name: "Magnesium phosphates"
+  risk_level: "moderate"
+  evidence_summary: "Magnesium phosphates (E 343) are acidity regulators and anti-caking agents. EFSA's 2019 re-evaluation of the phosphates set a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e451:
+  name: "Triphosphates"
+  risk_level: "moderate"
+  evidence_summary: "Triphosphates (E 451) are emulsifying salts and stabilisers used in processed meat, fish and cheese. EFSA's 2019 re-evaluation of the phosphates set a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+e452:
+  name: "Polyphosphates"
+  risk_level: "moderate"
+  evidence_summary: "Polyphosphates (E 452) are emulsifying salts and stabilisers used in processed cheese, meat and fish products. EFSA's 2019 re-evaluation of the phosphates set a group ADI of 40 mg/kg bw/day expressed as phosphorus. Phosphates are not genotoxic or carcinogenic; the concern is total phosphorus intake."
+  dose_context: "EFSA estimated that exposure to phosphates may exceed the group ADI for infants, toddlers, children and adolescents. High phosphorus intake is of particular concern for people with reduced kidney function."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+
+# ---- Celluloses (E 460-E 469) ----
+# All covered by EFSA's 2018 group re-evaluation (pub/5047): not absorbed,
+# excreted intact or fermented by gut flora; no need for a numerical ADI; no
+# safety concern at the reported uses.
+e460:
+  name: "Cellulose"
+  risk_level: "low"
+  evidence_summary: "Cellulose (E 460) — microcrystalline cellulose E 460(i) and powdered cellulose E 460(ii) — is a bulking agent, anti-caking agent and stabiliser, essentially purified plant fibre. EFSA's 2018 re-evaluation of the celluloses found them not absorbed and excreted intact or fermented by gut flora, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels; like other fibres, very high intakes can have mild gut effects."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e461:
+  name: "Methyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Methyl cellulose (E 461) is a thickener, emulsifier and stabiliser made from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels; like other soluble fibres, very high intakes can have mild laxative effects."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e462:
+  name: "Ethyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Ethyl cellulose (E 462) is a binder and filler made from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e463:
+  name: "Hydroxypropyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Hydroxypropyl cellulose (E 463) is a thickener and stabiliser made from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels; like other soluble fibres, very high intakes can have mild laxative effects."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e464:
+  name: "Hydroxypropyl methyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Hydroxypropyl methyl cellulose (E 464) is a thickener, emulsifier and stabiliser (also used to make plant-based gel capsules) made from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels; like other soluble fibres, very high intakes can have mild laxative effects."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e465:
+  name: "Ethyl methyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Ethyl methyl cellulose (E 465) is a thickener, emulsifier and foam stabiliser made from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e468:
+  name: "Crosslinked sodium carboxymethyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Crosslinked sodium carboxymethyl cellulose (E 468) is a stabiliser and thickener made from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+e469:
+  name: "Enzymatically hydrolysed carboxymethyl cellulose"
+  risk_level: "low"
+  evidence_summary: "Enzymatically hydrolysed carboxymethyl cellulose (E 469) is a thickener and stabiliser derived from plant cellulose. EFSA's 2018 re-evaluation of the celluloses found them not significantly absorbed, with no safety concern at the reported uses and no need for a numerical ADI."
+  dose_context: "No adverse effects at dietary levels."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/5047"
+
+# ---- Mono- and diglyceride esters (E 472a-f) ----
+# Covered by EFSA's 2020 group re-evaluation (pub/6032): no safety concern at
+# current uses; the components are digested like ordinary dietary fats and
+# acids; no numerical ADI considered necessary. (E 472e DATEM is listed above.)
+e472a:
+  name: "Acetic acid esters of mono- and diglycerides of fatty acids"
+  risk_level: "low"
+  evidence_summary: "Acetic acid esters of mono- and diglycerides (E 472a) are emulsifiers. EFSA's 2020 re-evaluation (covering the E 472a-f esters) concluded there is no safety concern at current uses; the components are digested like ordinary dietary fats and acids. No numerical ADI was considered necessary."
+  dose_context: "No safety concern was identified at reported use levels for the general population."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6032"
+
+e472b:
+  name: "Lactic acid esters of mono- and diglycerides of fatty acids"
+  risk_level: "low"
+  evidence_summary: "Lactic acid esters of mono- and diglycerides (E 472b) are emulsifiers used in whipped and aerated products. EFSA's 2020 re-evaluation (covering the E 472a-f esters) concluded there is no safety concern at current uses; the components are digested like ordinary dietary fats and acids. No numerical ADI was considered necessary."
+  dose_context: "No safety concern was identified at reported use levels for the general population."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6032"
+
+e472c:
+  name: "Citric acid esters of mono- and diglycerides of fatty acids (CITREM)"
+  risk_level: "low"
+  evidence_summary: "Citric acid esters of mono- and diglycerides (E 472c, CITREM) are emulsifiers used in margarines, sauces and infant formula. EFSA's 2020 re-evaluation (covering the E 472a-f esters) concluded there is no safety concern at current uses; the components are digested like ordinary dietary fats and acids. No numerical ADI was considered necessary."
+  dose_context: "No safety concern was identified at reported use levels for the general population."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6032"
+
+e472d:
+  name: "Tartaric acid esters of mono- and diglycerides of fatty acids"
+  risk_level: "low"
+  evidence_summary: "Tartaric acid esters of mono- and diglycerides (E 472d) are emulsifiers. EFSA's 2020 re-evaluation (covering the E 472a-f esters) concluded there is no safety concern at current uses; the components are digested like ordinary dietary fats and acids. No numerical ADI was considered necessary."
+  dose_context: "No safety concern was identified at reported use levels for the general population."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6032"
+
+e472f:
+  name: "Mixed acetic and tartaric acid esters of mono- and diglycerides of fatty acids"
+  risk_level: "low"
+  evidence_summary: "Mixed acetic and tartaric acid esters of mono- and diglycerides (E 472f) are emulsifiers used in baked goods. EFSA's 2020 re-evaluation (covering the E 472a-f esters) concluded there is no safety concern at current uses; the components are digested like ordinary dietary fats and acids. No numerical ADI was considered necessary."
+  dose_context: "No safety concern was identified at reported use levels for the general population."
+  source_url: "https://www.efsa.europa.eu/en/efsajournal/pub/6032"

@@ -83,7 +83,8 @@ def test_curated_evidence_without_source_is_not_shown(make_db, make_product):
     assert card.name == "Malic acid"
     assert not card.source_url
     assert "low concern" not in card.evidence_summary.lower()
-    assert "no detailed evidence" in card.evidence_summary.lower()
+    # Falls back to the deliberate "nothing specific flagged" message.
+    assert "specific health concern" in card.evidence_summary.lower()
     assert card.dose_context == ""
 
 

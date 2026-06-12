@@ -11,6 +11,16 @@ _MEANING = (
     "concerns; most approved additives are low-risk."
 )
 
+# Shown for a recognised, permitted additive we simply haven't written a
+# sourced evidence card for. Phrased as a deliberate "nothing to flag" state
+# rather than an unfinished one: if an additive had notable evidence, it would
+# already be on a sourced card here.
+_NO_FLAGGED_CONCERN = (
+    "An EU-approved food additive. Vera hasn't flagged a specific health "
+    "concern for it — additives with notable evidence appear on a sourced "
+    "card here instead."
+)
+
 
 class AdditiveScorer:
     def __init__(self, db: AdditiveDB):
@@ -35,7 +45,7 @@ class AdditiveScorer:
                     name=info.name,
                     e_number=e_num,
                     risk_level=info.risk_level,
-                    evidence_summary=info.evidence_summary or "No detailed evidence summary available.",
+                    evidence_summary=info.evidence_summary or _NO_FLAGGED_CONCERN,
                     dose_context=info.dose_context or "Dose/context data not available.",
                     source_url=info.source_url,
                     category=info.category,
@@ -48,7 +58,7 @@ class AdditiveScorer:
                     name=info.name,
                     e_number=e_num,
                     risk_level=info.risk_level,
-                    evidence_summary=info.pending_note or "No detailed evidence summary available.",
+                    evidence_summary=info.pending_note or _NO_FLAGGED_CONCERN,
                     dose_context="",
                     source_url=None,
                     category=info.category,
