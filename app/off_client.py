@@ -29,7 +29,7 @@ def _ssl_verify():
 _SEARCH_URL = "https://search.openfoodfacts.org/search"
 _SEARCH_FIELDS = "code,product_name,brands,image_url"
 _PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
-_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags,nutriments"
+_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags,countries_tags,nutriments"
 # Enough to pre-rank a candidate without fetching the full product. additives_tags is
 # NOT available from search (only additives_n), so promising candidates are still
 # fetched in full for accurate additive scoring.
@@ -111,16 +111,31 @@ class OFFClient:
             ))
         return results
 
-    async def search_category(self, tag: str, page_size: int = 12) -> list[CategoryCandidate]:
+    async def search_category(
+        self, tag: str, page_size: int = 12, countries: list[str] | None = None,
+    ) -> list[CategoryCandidate]:
         """Return candidates in a given OFF category tag, each carrying the Nutri-Score
-        and NOVA needed to pre-rank it before deciding whether to fetch it in full."""
+        and NOVA needed to pre-rank it before deciding whether to fetch it in full.
+
+        When ``countries`` is given (OFF ``countries_tags`` such as ``en:united-kingdom``),
+        results are constrained to those markets — Option A region filtering, so we never
+        offer a product the user can't buy. Passed empty/None, the query stays a bare
+        category filter (the unfiltered fallback)."""
+        q = f'categories_tags:"{tag}"'
+        if countries:
+            clause = " OR ".join(f'countries_tags:"{c}"' for c in countries)
+            q = f'{q} AND ({clause})'
         resp = await self._get(_SEARCH_URL, params={
-            "q": f'categories_tags:"{tag}"',
+            "q": q,
             "page_size": page_size,
             "fields": _CATEGORY_FIELDS,
-            # A bare category filter has no relevance ranking, so OFF otherwise
-            # returns a varying page. Sort by popularity for a stable, recognisable set.
-            "sort_by": "-popularity_key",
+            # A bare category filter has no relevance ranking, so OFF otherwise returns a
+            # varying page. Sort by Nutri-Score (healthiest first): this is deterministic
+            # AND pulls the healthier options into the fetched slice. A popularity sort
+            # buried them behind the most-scanned, typically less-healthy mainstream
+            # products — the aloe-vera starvation, where every healthier aloe drink sat
+            # past the top of the popularity list and never entered the candidate pool.
+            "sort_by": "nutriscore_score",
         })
 
         if resp.status_code == 429:
@@ -263,6 +278,7 @@ def _normalise(off_id: str, p: dict) -> NormalisedProduct:
         image_url=p.get("image_url") or None,
         raw_off_url=f"https://world.openfoodfacts.org/product/{off_id}/",
         categories=[c for c in (p.get("categories_tags") or []) if c],
+        countries_tags=[c for c in (p.get("countries_tags") or []) if c],
         nutriments=_parse_nutriments(p.get("nutriments") or {}),
         is_beverage=_is_beverage(p.get("categories_tags") or []),
     )

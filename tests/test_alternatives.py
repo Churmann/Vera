@@ -29,13 +29,14 @@ def client():
                               off_max_retries=2, off_retry_backoff=0.0))
 
 
-def _current(categories, off_id="cur", nutri="C", nova=2):
+def _current(categories, off_id="cur", nutri="C", nova=2, countries=None):
     return NormalisedProduct(
         off_id=off_id, name="Current", brand="B",
         nutriscore_grade=nutri, nova_group=nova, additives=[],
         ingredients_text=None, image_url=None,
         raw_off_url="https://world.openfoodfacts.org/product/cur/",
         categories=categories,
+        countries_tags=countries or [],
     )
 
 
@@ -50,7 +51,7 @@ def _mock_product(code, grade, nova, cats=("en:chocolate-spreads",)):
     ``cats`` are the candidate's category tags — by default the same specific
     category most tests' current product carries, so the same-kind filter keeps
     it (a candidate found under a category genuinely belongs to it)."""
-    respx.get(PRODUCT_URL.format(code=code)).mock(return_value=httpx.Response(200, json={"product": {
+    return respx.get(PRODUCT_URL.format(code=code)).mock(return_value=httpx.Response(200, json={"product": {
         "product_name": f"Product {code}", "brands": "Brand",
         "nutriscore_grade": grade, "nova_group": nova,
         "additives_tags": [], "image_url": f"http://img/{code}.jpg",
@@ -81,22 +82,27 @@ async def test_returns_only_better_sorted_capped_and_excludes_current(engine, cl
 
 
 @respx.mock
-async def test_broadens_when_specific_category_too_sparse(engine, client):
+async def test_tightest_level_with_one_match_shows_only_it_no_broaden(engine, client):
+    """One healthier match at the tightest level is enough — show only it and do NOT
+    broaden to a looser level (broadening on <2 is how a sibling soda reached a cola)."""
+    searched = []
+
     def search_handler(request):
         q = request.url.params.get("q")
+        searched.append(q)
         if "chocolate-spreads" in q:
             return httpx.Response(200, json={"hits": [_hit("x1", "a", 1)]})
-        return httpx.Response(200, json={"hits": [_hit("x1", "a", 1), _hit("x2", "b", 2), _hit("x3", "a", 2)]})
+        return httpx.Response(200, json={"hits": [_hit("x2", "a", 1), _hit("x3", "a", 1)]})
 
-    route = respx.get(SEARCH_URL).mock(side_effect=search_handler)
-    _mock_product("x1", "a", 1)  # 100
-    _mock_product("x2", "b", 2)  # 85
-    _mock_product("x3", "a", 2)  # 95
-    alts = await find_better_alternatives(client, engine, _current(["en:spreads", "en:chocolate-spreads"]), current_score=75)
+    respx.get(SEARCH_URL).mock(side_effect=search_handler)
+    _mock_product("x1", "a", 1)  # 100, in the tightest level
+    _mock_product("x2", "a", 1)
+    _mock_product("x3", "a", 1)
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:spreads", "en:chocolate-spreads"]), current_score=50)
     await client.aclose()
-    # Most-specific level found only 1 better → broadened to the parent category.
-    assert route.call_count == 2
-    assert [a.score for a in alts] == [100, 95, 85]
+    assert [a.off_id for a in alts] == ["x1"]               # only the tightest-level match
+    assert all("chocolate-spreads" in q for q in searched)  # never broadened to en:spreads
 
 
 @respx.mock
@@ -181,6 +187,119 @@ async def test_prefilters_unbeatable_candidates_without_fetching(engine, client)
     await client.aclose()
     assert [a.off_id for a in alts] == ["good"]
     assert poor_route.call_count == 0
+
+
+@respx.mock
+async def test_searches_a_large_candidate_pool_by_default(engine, client):
+    """Healthier options often sit deep in a category behind more-popular unhealthy ones,
+    so the candidate search must pull a large pool, not a dozen — this is the aloe-vera
+    starvation, where the healthier aloe drinks fell outside the top-12 slice."""
+    captured = {}
+
+    def handler(request):
+        captured["page_size"] = request.url.params.get("page_size")
+        return httpx.Response(200, json={"hits": [_hit("x", "a", 1)]})
+
+    respx.get(SEARCH_URL).mock(side_effect=handler)
+    _mock_product("x", "a", 1)
+    await find_better_alternatives(
+        client, engine, _current(["en:chocolate-spreads"]), current_score=50)
+    await client.aclose()
+    assert captured["page_size"] == "100"
+
+
+@respx.mock
+async def test_caps_full_fetches_to_top_upper_bound_candidates(engine, client):
+    """A large pool must not become a large fan-out: only the most promising candidates
+    (highest Nutri-Score + NOVA upper bound) are fully fetched, bounding product-endpoint
+    calls so a 100-item pool can't trip the OFF rate limit. The pre-filter already gives a
+    cheap upper bound per candidate; rank by it and fetch only the top ``max_fetch``."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        _hit("u100", "a", 1), _hit("u90", "b", 1), _hit("u80", "c", 1), _hit("u75", "c", 2),
+    ]}))
+    routes = {
+        "u100": _mock_product("u100", "a", 1),  # upper bound 100
+        "u90": _mock_product("u90", "b", 1),    # upper bound 90
+        "u80": _mock_product("u80", "c", 1),    # upper bound 80
+        "u75": _mock_product("u75", "c", 2),    # upper bound 75
+    }
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:chocolate-spreads"]), current_score=0, max_fetch=2)
+    await client.aclose()
+    # Only the two highest-upper-bound candidates are fetched at all...
+    assert routes["u100"].call_count == 1
+    assert routes["u90"].call_count == 1
+    assert routes["u80"].call_count == 0
+    assert routes["u75"].call_count == 0
+    # ...and they are exactly what's shown, best first.
+    assert [a.off_id for a in alts] == ["u100", "u90"]
+
+
+@respx.mock
+async def test_excludes_alternative_with_missing_name(engine, client):
+    """Never suggest a nameless product. A candidate whose name is missing — OFF returns
+    the 'Unknown product' placeholder — is dropped even when it scores better."""
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        _hit("named", "a", 1), _hit("noname", "a", 1),
+    ]}))
+    _mock_product("named", "a", 1)
+    # No product_name in the OFF payload -> _normalise yields the "Unknown product" sentinel.
+    respx.get(PRODUCT_URL.format(code="noname")).mock(return_value=httpx.Response(200, json={"product": {
+        "nutriscore_grade": "a", "nova_group": 1, "additives_tags": [],
+        "image_url": "http://img/noname.jpg", "categories_tags": ["en:chocolate-spreads"]}}))
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:chocolate-spreads"]), current_score=50)
+    await client.aclose()
+    assert [a.off_id for a in alts] == ["named"]
+    assert all(a.name and a.name != "Unknown product" for a in alts)
+
+
+@respx.mock
+async def test_region_filter_prefers_same_country(engine, client):
+    """Option A: alternatives are filtered to the viewed product's country, so a UK product
+    isn't offered a cola it can't buy. When the in-country search yields a healthier
+    same-kind match, that's what's shown — the search carries the country clause."""
+    searched = []
+
+    def handler(request):
+        q = request.url.params.get("q")
+        searched.append(q)
+        if "united-kingdom" in q:
+            return httpx.Response(200, json={"hits": [_hit("uk1", "a", 1)]})
+        return httpx.Response(200, json={"hits": [_hit("foreign", "a", 1)]})
+
+    respx.get(SEARCH_URL).mock(side_effect=handler)
+    _mock_product("uk1", "a", 1)
+    _mock_product("foreign", "a", 1)
+    cur = _current(["en:chocolate-spreads"], countries=["en:united-kingdom"])
+    alts = await find_better_alternatives(client, engine, cur, current_score=50)
+    await client.aclose()
+    assert [a.off_id for a in alts] == ["uk1"]          # the in-country match, not the foreign one
+    assert "united-kingdom" in searched[0]              # in-country search tried first
+
+
+@respx.mock
+async def test_region_falls_back_to_unfiltered_when_no_local_match(engine, client):
+    """The UK-aloe case: no HEALTHIER in-country option, so fall back to an unfiltered
+    search at the same level rather than showing nothing — a foreign same-kind product is
+    better than an empty section."""
+    searched = []
+
+    def handler(request):
+        q = request.url.params.get("q")
+        searched.append(q)
+        if "united-kingdom" in q:
+            return httpx.Response(200, json={"hits": []})   # nothing healthier in-country
+        return httpx.Response(200, json={"hits": [_hit("foreign", "a", 1)]})
+
+    respx.get(SEARCH_URL).mock(side_effect=handler)
+    _mock_product("foreign", "a", 1)
+    cur = _current(["en:chocolate-spreads"], countries=["en:united-kingdom"])
+    alts = await find_better_alternatives(client, engine, cur, current_score=50)
+    await client.aclose()
+    assert [a.off_id for a in alts] == ["foreign"]        # honest cross-border fallback
+    assert "united-kingdom" in searched[0]                # in-country tried first
+    assert any("united-kingdom" not in q for q in searched)  # then unfiltered fallback
 
 
 @respx.mock
@@ -361,26 +480,25 @@ async def test_only_generic_categories_returns_empty_without_searching(engine, c
 
 
 @respx.mock
-async def test_pepsi_rejects_property_tag_cross_kinds_keeps_real_sodas(engine, client):
-    """Regression (the Pepsi bug): sparkling water, energy drinks and iced tea shared
-    only cross-cutting property/negation groupings with Pepsi — sparkling water via
-    en:carbonated-drinks, the energy drink via en:sweetened-beverages, the iced tea via
-    en:non-alcoholic-beverages. Now those groupings can't anchor a same kind, so only
-    genuine colas/sodas (Coke Zero, Fanta) remain."""
-    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
-        _hit("cokezero", "a", 1), _hit("fanta", "a", 1),
-        _hit("sparkwater", "a", 1), _hit("energy", "a", 1), _hit("icedtea", "a", 1),
+async def test_pepsi_shows_only_colas_when_a_better_cola_exists(engine, client):
+    """The Pepsi case: a healthier cola (Coke Zero) exists at the tightest level (en:colas),
+    so ONLY colas are shown. The blood-orange spritz / Fanta (sodas, not colas) and the
+    sparkling water / energy drink (property-only) never appear, and the search never even
+    broadens to en:sodas."""
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json={"hits": [
+        _hit("cokezero", "a", 1), _hit("fanta", "a", 1), _hit("spritz", "a", 1),
+        _hit("water", "a", 1), _hit("energy", "a", 1),
     ]}))
     _mock_product("cokezero", "a", 1,
                   cats=["en:beverages", "en:carbonated-drinks", "en:sodas", "en:colas", "en:diet-sodas"])
     _mock_product("fanta", "a", 1,
                   cats=["en:beverages", "en:carbonated-drinks", "en:sodas", "en:orange-sodas"])
-    _mock_product("sparkwater", "a", 1,
+    _mock_product("spritz", "a", 1,
+                  cats=["en:beverages", "en:carbonated-drinks", "en:sodas", "en:sweetened-beverages"])
+    _mock_product("water", "a", 1,
                   cats=["en:beverages", "en:carbonated-drinks", "en:carbonated-waters", "en:waters"])
     _mock_product("energy", "a", 1,
                   cats=["en:beverages", "en:sweetened-beverages", "en:carbonated-drinks", "en:energy-drinks"])
-    _mock_product("icedtea", "a", 1,
-                  cats=["en:beverages", "en:non-alcoholic-beverages", "en:sweetened-beverages", "en:iced-teas"])
     pepsi = _current(
         ["en:beverages-and-beverages-preparations", "en:beverages", "en:carbonated-drinks",
          "en:non-alcoholic-beverages", "en:sodas", "en:colas", "en:sweetened-beverages"],
@@ -388,10 +506,85 @@ async def test_pepsi_rejects_property_tag_cross_kinds_keeps_real_sodas(engine, c
     alts = await find_better_alternatives(client, engine, pepsi, current_score=40)
     await client.aclose()
     ids = [a.off_id for a in alts]
-    assert "sparkwater" not in ids
-    assert "energy" not in ids
-    assert "icedtea" not in ids
-    assert ids == ["cokezero", "fanta"]  # both score 100, tie broken by off_id
+    assert ids == ["cokezero"]          # only the cola
+    assert route.call_count == 1        # returned at en:colas, never broadened to en:sodas
+    for absent in ("spritz", "fanta", "water", "energy"):
+        assert absent not in ids
+
+
+@respx.mock
+async def test_pepsi_falls_back_to_better_soda_only_when_no_better_cola(engine, client):
+    """If the tightest level (en:colas) has no HEALTHIER cola — only a worse one — broaden
+    one level to en:sodas and offer the genuinely healthier sodas instead of nothing."""
+    searched = []
+
+    def handler(request):
+        q = request.url.params.get("q")
+        searched.append(q)
+        if "colas" in q:
+            return httpx.Response(200, json={"hits": [_hit("cola_e", "e", 4)]})  # a cola, but worse
+        if "sodas" in q:
+            return httpx.Response(200, json={"hits": [_hit("fanta", "a", 1), _hit("spritz", "a", 1)]})
+        return httpx.Response(200, json={"hits": []})
+
+    respx.get(SEARCH_URL).mock(side_effect=handler)
+    _mock_product("cola_e", "e", 4, cats=["en:colas", "en:sodas"])       # not healthier -> pruned
+    _mock_product("fanta", "a", 1, cats=["en:sodas", "en:orange-sodas"])
+    _mock_product("spritz", "a", 1, cats=["en:sodas", "en:sweetened-beverages"])
+    pepsi = _current(["en:beverages", "en:carbonated-drinks", "en:sodas", "en:colas"],
+                     nutri="E", nova=4)
+    alts = await find_better_alternatives(client, engine, pepsi, current_score=40)
+    await client.aclose()
+    ids = [a.off_id for a in alts]
+    assert ids == ["fanta", "spritz"]                   # honest soda fallback (tie -> off_id order)
+    assert searched[0] == 'categories_tags:"en:colas"'  # tightest tried first
+    assert any("sodas" in q for q in searched)          # broadened only after colas had no healthier cola
+
+
+@respx.mock
+async def test_narrow_category_falls_back_to_close_sibling(engine, client):
+    """A cocoa-hazelnut spread with no healthier option in its exact niche broadens to the
+    parent kind (chocolate spreads) and offers a close sibling — not an empty section."""
+    searched = []
+
+    def handler(request):
+        q = request.url.params.get("q")
+        searched.append(q)
+        if "cocoa-and-hazelnuts-spreads" in q:
+            return httpx.Response(200, json={"hits": []})           # nothing healthier in the niche
+        if "chocolate-spreads" in q:
+            return httpx.Response(200, json={"hits": [_hit("sibling", "a", 1)]})
+        return httpx.Response(200, json={"hits": []})
+
+    respx.get(SEARCH_URL).mock(side_effect=handler)
+    _mock_product("sibling", "a", 1, cats=["en:spreads", "en:sweet-spreads", "en:chocolate-spreads"])
+    current = _current(
+        ["en:spreads", "en:sweet-spreads", "en:chocolate-spreads", "en:cocoa-and-hazelnuts-spreads"],
+        nutri="C", nova=2)
+    alts = await find_better_alternatives(client, engine, current, current_score=50)
+    await client.aclose()
+    assert [a.off_id for a in alts] == ["sibling"]                   # a close sibling, not empty
+    assert searched[0] == 'categories_tags:"en:cocoa-and-hazelnuts-spreads"'  # tightest first
+    assert any("chocolate-spreads" in q for q in searched)          # broadened one level
+
+
+@respx.mock
+async def test_shows_at_least_one_when_a_healthier_option_exists_somewhere(engine, client):
+    """The non-empty guarantee: the tightest level is barren but a healthier option exists
+    at a broader (still specific, non-generic) level — surface it rather than nothing."""
+    def handler(request):
+        q = request.url.params.get("q")
+        if "chocolate-spreads" in q:
+            return httpx.Response(200, json={"hits": []})
+        return httpx.Response(200, json={"hits": [_hit("betterspread", "a", 1)]})
+
+    respx.get(SEARCH_URL).mock(side_effect=handler)
+    _mock_product("betterspread", "a", 1, cats=["en:spreads"])
+    alts = await find_better_alternatives(
+        client, engine, _current(["en:spreads", "en:chocolate-spreads"]), current_score=50)
+    await client.aclose()
+    assert len(alts) >= 1
+    assert alts[0].off_id == "betterspread"
 
 
 @respx.mock

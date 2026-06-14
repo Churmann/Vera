@@ -51,6 +51,8 @@ class NormalisedProduct:
     raw_off_url: str
     # OFF categories_tags, ordered broad → most-specific (as OFF returns them).
     categories: list[str] = field(default_factory=list)
+    # OFF countries_tags (e.g. "en:united-kingdom") — the markets the product is sold in.
+    countries_tags: list[str] = field(default_factory=list)
     nutriments: dict[str, float] = field(default_factory=dict)
     is_beverage: bool = False
 

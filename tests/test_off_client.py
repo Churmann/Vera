@@ -181,17 +181,46 @@ async def test_search_category_returns_candidates_with_scoring_fields(settings):
 
 
 @respx.mock
-async def test_search_category_sorts_deterministically_by_popularity(settings):
+async def test_search_category_sorts_by_nutriscore_to_surface_healthier_options(settings):
     """A bare category filter has no relevance signal, so OFF returns an arbitrary,
-    varying page. A deterministic sort makes the candidate set stable across loads
-    (and surfaces the most-scanned, recognisable products first)."""
+    varying page. Sorting by Nutri-Score (healthiest first) makes the set deterministic
+    AND pulls the healthier options into the fetched slice — a popularity sort instead
+    buried them behind the most-scanned, typically less-healthy mainstream products
+    (the aloe-vera starvation)."""
     route = respx.get("https://search.openfoodfacts.org/search").mock(
         return_value=httpx.Response(200, json={"hits": [{"code": "111"}]})
     )
     client = OFFClient(settings)
     await client.search_category("en:colas")
     await client.aclose()
-    assert route.calls.last.request.url.params.get("sort_by") == "-popularity_key"
+    assert route.calls.last.request.url.params.get("sort_by") == "nutriscore_score"
+
+
+@respx.mock
+async def test_search_category_filters_by_country_when_given(settings):
+    """Option A region filter: when countries are supplied, the search constrains results to
+    those markets via countries_tags so we never offer a product the user can't buy."""
+    route = respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={"hits": []})
+    )
+    client = OFFClient(settings)
+    await client.search_category("en:colas", countries=["en:united-kingdom"])
+    await client.aclose()
+    q = route.calls.last.request.url.params.get("q")
+    assert 'categories_tags:"en:colas"' in q
+    assert 'countries_tags:"en:united-kingdom"' in q
+
+
+@respx.mock
+async def test_search_category_no_country_clause_by_default(settings):
+    """Without countries, the query stays a bare category filter (the unfiltered fallback)."""
+    route = respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={"hits": []})
+    )
+    client = OFFClient(settings)
+    await client.search_category("en:colas")
+    await client.aclose()
+    assert route.calls.last.request.url.params.get("q") == 'categories_tags:"en:colas"'
 
 
 @respx.mock

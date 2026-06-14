@@ -58,19 +58,27 @@ def _reason(current: NormalisedProduct, current_dims, candidate: NormalisedProdu
 _MAX_CONCURRENT_FETCHES = 4
 
 
-def _could_beat(engine: FoodScoringEngine, candidate, current_score: int) -> bool:
-    """Upper bound on a candidate's uncapped score from Nutri-Score + NOVA alone,
-    assuming a perfect (additive-free) profile. If even that can't exceed the current
-    score, the real product can't either, so it isn't worth fetching. Candidates
-    missing either field are rejected — we never recommend products with missing data."""
+def _upper_bound(engine: FoodScoringEngine, candidate) -> int | None:
+    """A candidate's best-case uncapped score from its Nutri-Score + NOVA alone, assuming
+    a perfect (additive-free) profile. ``None`` when either field is missing (we never
+    recommend products with missing data). Real additives can only lower the score, so this
+    is a true upper bound — safe both for pruning candidates that can't win and for
+    pre-ranking which ones are worth fully fetching."""
     if candidate.nutriscore_grade is None or candidate.nova_group is None:
-        return False
+        return None
     best_case = NormalisedProduct(
         off_id=candidate.code, name="", brand=None,
         nutriscore_grade=candidate.nutriscore_grade, nova_group=candidate.nova_group,
         additives=[], ingredients_text=None, image_url=None, raw_off_url="",
     )
-    return uncapped_overall(engine.score(best_case)) > current_score
+    return uncapped_overall(engine.score(best_case))
+
+
+def _could_beat(engine: FoodScoringEngine, candidate, current_score: int) -> bool:
+    """Whether a candidate's upper bound exceeds the current score — i.e. whether the real
+    product could possibly be a genuine improvement and is therefore worth fetching."""
+    ub = _upper_bound(engine, candidate)
+    return ub is not None and ub > current_score
 
 
 async def _fetch_many(off_client, codes: list[str]) -> list[NormalisedProduct]:
@@ -94,79 +102,100 @@ async def find_better_alternatives(
     current_score: int,
     *,
     max_results: int = 4,
-    candidate_pool: int = 12,
-    max_levels: int = 3,
+    candidate_pool: int = 100,
+    max_fetch: int = 12,
+    max_levels: int | None = None,
 ) -> list[Alternative]:
     """Same-category products that are genuinely better than ``product``.
 
-    ``current_score`` is the current product's *uncapped* weighted score.
-    Candidates are ranked and compared on their uncapped score too, so the cap
-    (which pins every ultra-processed product in a category to the same number)
-    doesn't flatten the comparison — but the score *displayed* on each card stays
-    the capped one the user sees elsewhere. Candidates missing NOVA or Nutri-Score
-    data are skipped, so we never recommend a product that only looks better for
-    lack of data to penalise it.
+    ``current_score`` is the current product's *uncapped* weighted score. Candidates are
+    ranked and compared on their uncapped score too, so the cap (which pins every
+    ultra-processed product in a category to the same number) doesn't flatten the
+    comparison — but the score *displayed* on each card stays the capped one the user
+    sees elsewhere. Candidates missing NOVA or Nutri-Score data are skipped.
 
-    Searches the most-specific category first, broadening one level at a time
-    (up to ``max_levels``) until at least two better alternatives are found.
-    Returns the best ``max_results``, best first.
+    Tightest-first, like Yuka: the most-specific kind level is searched first and a
+    candidate counts only if it shares *that level's* kind tag. The first (tightest) level
+    that yields one or more healthier same-kind matches wins and is returned alone — looser
+    levels never dilute it. If a level has none, broaden one level and try again, through
+    every reasonable (specific, non-generic) level, so the section is empty only when no
+    healthier option exists at any of them. Returns the best ``max_results``, best first.
     """
     tags = _ordered_category_tags(product.categories)
     if not tags:
         return []
 
-    # Every alternative must be genuinely the same KIND of product: it has to
-    # share at least one specific category with the current product, not merely a
-    # broad grouping like "snacks" or "confectioneries". If the current product
-    # has no specific category at all, we can't establish kinship — return empty.
-    current_specific = _specific_tags(product.categories)
-    if not current_specific:
+    # No specific kind tag at all (only broad groupings) -> we can't establish kinship.
+    # Honest empty rather than a loosely-related guess.
+    if not _specific_tags(product.categories):
         return []
 
     current_dims = engine.score(product).dimensions
 
-    best: list[Alternative] = []
-    for tag in tags[:max_levels]:
+    levels = tags if max_levels is None else tags[:max_levels]
+
+    # Option A region filter: at each level, search the viewed product's own market(s) first,
+    # then fall back to an unfiltered search at that same level before broadening to a looser
+    # kind. A foreign same-kind product is a better suggestion than an empty section, but a
+    # genuinely available in-market one is better still. With no known market, only the
+    # unfiltered pass runs (so non-region products are unaffected).
+    product_countries = product.countries_tags
+    attempts: list[tuple[str, list[str] | None]] = []
+    for tag in levels:
+        if product_countries:
+            attempts.append((tag, product_countries))
+        attempts.append((tag, None))
+
+    for tag, countries in attempts:
         try:
-            candidates = await off_client.search_category(tag, page_size=candidate_pool)
+            candidates = await off_client.search_category(
+                tag, page_size=candidate_pool, countries=countries)
         except OFFError:
-            # A rate-limited/failed search is NOT an empty category. Stop here and
-            # return what we already have rather than broadening into a parent
-            # category and recommending unrelated products.
+            # A rate-limited/failed search is NOT an empty level. Stop rather than
+            # broadening into a looser tag and recommending unrelated products.
             break
 
         seen: set[str] = {product.off_id}
         unique = [c for c in candidates if not (c.code in seen or seen.add(c.code))]
 
-        # Pre-filter on the Nutri-Score + NOVA the search already gave us: only fetch
-        # the full product for candidates that *could* beat the current score even with
-        # a perfect additives profile. This keeps the product-endpoint fan-out small
-        # enough not to trip its rate limit, while never pruning a genuine improvement
-        # (the estimate is an upper bound — real additives can only lower the score).
-        to_fetch = [c.code for c in unique if _could_beat(engine, c, current_score)]
+        # Scan the whole (large) pool cheaply on the Nutri-Score + NOVA the search already
+        # returned, so a healthier option buried deep in a popular category still gets seen.
+        # Keep only candidates whose best-case (additive-free) upper bound beats the current
+        # score, rank them best-bound first, and fully fetch just the top ``max_fetch``. The
+        # bound never prunes a genuine improvement (real additives can only lower a score),
+        # and capping the fetch keeps the product-endpoint fan-out small enough to dodge the
+        # rate limit no matter how big the pool or how low the current score.
+        beatable = []
+        for c in unique:
+            ub = _upper_bound(engine, c)
+            if ub is not None and ub > current_score:
+                beatable.append((ub, c.code))
+        beatable.sort(key=lambda t: (-t[0], t[1]))
+        to_fetch = [code for _, code in beatable[:max_fetch]]
 
         ranked: list[tuple[int, Alternative]] = []
         for p in await _fetch_many(off_client, to_fetch):
             if p.nova_group is None or p.nutriscore_grade is None:
                 continue  # don't recommend products with missing data
-            if _specific_tags(p.categories).isdisjoint(current_specific):
-                continue  # not the same kind of product — reject regardless of score
+            if not p.name or p.name == "Unknown product":
+                continue  # never suggest a nameless product (off_client's missing-name sentinel)
+            if tag not in _specific_tags(p.categories):
+                continue  # must be the same KIND at this level — not a looser sibling
             result = engine.score(p)
             rank = uncapped_overall(result)
             if rank > current_score:
                 display = weighted_overall(result)
                 reason = _reason(product, current_dims, p, result.dimensions)
                 ranked.append((rank, Alternative(p.off_id, p.name, p.brand, p.image_url, display, _band(display), reason)))
-        # Rank descending, breaking ties by off_id so the order is stable across loads.
-        ranked.sort(key=lambda t: (-t[0], t[1].off_id))
-        alts = [a for _, a in ranked]
 
-        if len(alts) >= 2:
-            return alts[:max_results]
-        if len(alts) > len(best):
-            best = alts
+        if ranked:
+            # Tightest non-empty level wins: show only its matches, best first (ties broken
+            # by off_id for a stable order across loads). Looser levels never contribute.
+            ranked.sort(key=lambda t: (-t[0], t[1].off_id))
+            return [a for _, a in ranked][:max_results]
+        # Nothing healthier at this level -> broaden to the next (looser) reasonable level.
 
-    return best[:max_results]
+    return []
 
 
 # Categories so broad they mix unrelated product KINDS. These are never searched
