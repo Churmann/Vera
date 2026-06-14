@@ -65,7 +65,7 @@ class AdditiveDB:
         return self._db.get(e_number.lower())
 
     def _load(self, taxonomy_path: Path, curated_path: Path) -> None:
-        with open(taxonomy_path) as f:
+        with open(taxonomy_path, encoding="utf-8") as f:
             for entry in json.load(f):
                 e_num = entry["e_number"].lower()
                 self._db[e_num] = AdditiveInfo(
@@ -75,7 +75,7 @@ class AdditiveDB:
                     category=entry.get("category") or infer_category(e_num),
                 )
 
-        with open(curated_path) as f:
+        with open(curated_path, encoding="utf-8") as f:
             curated = yaml.safe_load(f) or {}
 
         for e_num, data in curated.items():

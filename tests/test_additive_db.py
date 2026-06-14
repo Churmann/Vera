@@ -29,6 +29,28 @@ def db_files(tmp_path):
     return t, c
 
 
+def test_loads_utf8_evidence_without_mojibake(tmp_path):
+    """Evidence text uses real UTF-8 punctuation (em-dashes, accents). The loader must read
+    the data files as UTF-8 so they don't turn into mojibake (e.g. an em-dash rendering as
+    'â€"') under a non-UTF-8 locale such as Windows cp1252."""
+    taxonomy = [{"e_number": "e330", "name": "Citric acid", "risk_level": "low"}]
+    curated = {"e330": {
+        "name": "Citric acid", "risk_level": "low",
+        "evidence_summary": "JECFA assigned an ADI 'not limited' — very low toxicity.",
+        "dose_context": "Frequent exposure can erode enamel — a local effect.",
+        "source_url": "https://example.com/e330",
+    }}
+    t = tmp_path / "taxonomy.json"
+    c = tmp_path / "curated.yaml"
+    t.write_text(json.dumps(taxonomy), encoding="utf-8")
+    # allow_unicode so the em-dash is written as a real UTF-8 byte sequence, not \u-escaped.
+    c.write_text(yaml.dump(curated, allow_unicode=True), encoding="utf-8")
+    db = AdditiveDB(t, c)
+    summary = db.get("e330").evidence_summary
+    assert "—" in summary
+    assert "â€" not in summary
+
+
 def test_loads_taxonomy_entry(db_files):
     db = AdditiveDB(*db_files)
     info = db.get("e330")
