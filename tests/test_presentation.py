@@ -22,11 +22,12 @@ def _dim(id, label, score, input_label="x", positives=None, flags=None,
     )
 
 
-def _card(e_number, risk, category="other"):
+def _card(e_number, risk, category="other", secondary_source_url=None):
     return EvidenceCard(
         name=f"Additive {e_number}", e_number=e_number, risk_level=risk,
         evidence_summary="ev", dose_context="dose",
         source_url="http://x" if risk != RiskLevel.UNKNOWN else None,
+        secondary_source_url=secondary_source_url,
         category=category,
     )
 
@@ -88,6 +89,14 @@ def test_additive_row_carries_evidence_dose_source():
     assert row.source_url == "http://x"
     assert row.icon_category == "preservative"
     assert row.risk_label == "High"
+
+
+def test_additive_row_carries_secondary_source():
+    cards = [_card("e211", RiskLevel.HIGH, "preservative",
+                   secondary_source_url="http://efsa/4433")]
+    grouped = group_factors(_result(nutrition=80, nova=100, additive_cards=cards))
+    row = next(r for r in grouped.negatives if r.kind == "additive")
+    assert row.secondary_source_url == "http://efsa/4433"
 
 
 def test_no_additives_keeps_a_positive_summary_row():

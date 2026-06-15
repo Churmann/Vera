@@ -30,6 +30,9 @@ class AdditiveInfo:
     evidence_summary: str = ""
     dose_context: str = ""
     source_url: str | None = None
+    # An optional second supporting source, e.g. the EFSA evaluation backing the
+    # ADI when the primary source_url is a primary study. Rendered as an extra link.
+    secondary_source_url: str | None = None
     # Optional honest status shown in place of evidence when there is no
     # verified source_url (e.g. "EFSA re-evaluation in progress").
     pending_note: str | None = None
@@ -65,6 +68,7 @@ class EvidenceCard:
     evidence_summary: str
     dose_context: str
     source_url: str | None
+    secondary_source_url: str | None = None
     category: str = "other"
 
 

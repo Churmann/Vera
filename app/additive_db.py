@@ -91,6 +91,7 @@ class AdditiveDB:
                 evidence_summary=data.get("evidence_summary", ""),
                 dose_context=data.get("dose_context", ""),
                 source_url=data.get("source_url"),
+                secondary_source_url=data.get("secondary_source_url"),
                 pending_note=data.get("pending_note"),
                 category=data.get("category") or infer_category(e_num),
             )

@@ -85,6 +85,9 @@
     {% if row.source_url %}
     <a href="{{ row.source_url }}" target="_blank" rel="noopener" class="source-link">Source ↗</a>
     {% endif %}
+    {% if row.secondary_source_url %}
+    <a href="{{ row.secondary_source_url }}" target="_blank" rel="noopener" class="source-link">Additional source ↗</a>
+    {% endif %}
     {% endif %}
   </div>
 </details>

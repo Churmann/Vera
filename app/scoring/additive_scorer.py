@@ -48,6 +48,7 @@ class AdditiveScorer:
                     evidence_summary=info.evidence_summary or _NO_FLAGGED_CONCERN,
                     dose_context=info.dose_context or "Dose/context data not available.",
                     source_url=info.source_url,
+                    secondary_source_url=info.secondary_source_url,
                     category=info.category,
                 ))
             else:

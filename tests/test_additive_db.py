@@ -170,6 +170,38 @@ def test_loads_pending_note(tmp_path):
     assert not info.source_url
 
 
+def test_loads_secondary_source_url(tmp_path):
+    curated = {
+        "e211": {
+            "name": "Sodium benzoate",
+            "risk_level": "moderate",
+            "evidence_summary": "Hyperactivity in combination (McCann 2007).",
+            "dose_context": "ADI 5 mg/kg bw/day.",
+            "source_url": "https://doi.org/10.1016/S0140-6736(07)61306-3",
+            "secondary_source_url": "https://www.efsa.europa.eu/en/efsajournal/pub/4433",
+        }
+    }
+    t = tmp_path / "taxonomy.json"
+    c = tmp_path / "curated.yaml"
+    t.write_text("[]")
+    c.write_text(yaml.dump(curated))
+    db = AdditiveDB(t, c)
+    info = db.get("e211")
+    assert info.source_url == "https://doi.org/10.1016/S0140-6736(07)61306-3"
+    assert info.secondary_source_url == "https://www.efsa.europa.eu/en/efsajournal/pub/4433"
+
+
+def test_secondary_source_url_defaults_to_none(tmp_path):
+    curated = {"e330": {"name": "Citric acid", "risk_level": "low",
+                        "source_url": "https://example.com/e330"}}
+    t = tmp_path / "taxonomy.json"
+    c = tmp_path / "curated.yaml"
+    t.write_text("[]")
+    c.write_text(yaml.dump(curated))
+    db = AdditiveDB(t, c)
+    assert db.get("e330").secondary_source_url is None
+
+
 def test_empty_curated_file(tmp_path):
     t = tmp_path / "taxonomy.json"
     c = tmp_path / "curated.yaml"

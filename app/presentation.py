@@ -64,6 +64,7 @@ class FactorRow:
     evidence_summary: str = ""
     dose_context: str = ""
     source_url: str | None = None
+    secondary_source_url: str | None = None
 
 
 @dataclass
@@ -126,6 +127,7 @@ def _additive_row(card) -> FactorRow:
         evidence_summary=card.evidence_summary,
         dose_context=card.dose_context,
         source_url=card.source_url,
+        secondary_source_url=card.secondary_source_url,
     )
 
 
