@@ -1,3 +1,5 @@
+import base64
+
 import httpx
 import pytest
 import respx
@@ -349,3 +351,31 @@ def test_normalise_detects_beverage_from_categories():
 def test_normalise_non_beverage_default():
     p = _normalise("123", {"product_name": "Bar", "categories_tags": ["en:snacks"]})
     assert p.is_beverage is False
+
+
+@respx.mock
+async def test_fetch_product_uses_production_host_by_default(settings):
+    route = respx.get("https://world.openfoodfacts.org/api/v2/product/123.json").mock(
+        return_value=httpx.Response(200, json={"product": {"product_name": "X"}})
+    )
+    client = OFFClient(settings)
+    product = await client.fetch_product("123")
+    await client.aclose()
+    assert route.called
+    assert product.raw_off_url == "https://world.openfoodfacts.org/product/123/"
+
+
+@respx.mock
+async def test_fetch_product_uses_staging_host_with_basic_auth():
+    s = Settings(off_user_agent="TestApp/1.0", off_environment="staging",
+                 off_max_retries=0, off_retry_backoff=0.0, _env_file=None)
+    route = respx.get("https://world.openfoodfacts.net/api/v2/product/123.json").mock(
+        return_value=httpx.Response(200, json={"product": {"product_name": "X"}})
+    )
+    client = OFFClient(s)
+    product = await client.fetch_product("123")
+    await client.aclose()
+    assert route.called
+    auth = route.calls.last.request.headers["authorization"]
+    assert auth == "Basic " + base64.b64encode(b"off:off").decode()
+    assert product.raw_off_url == "https://world.openfoodfacts.net/product/123/"

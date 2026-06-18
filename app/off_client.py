@@ -28,7 +28,6 @@ def _ssl_verify():
 # /cgi/search.pl is permanently deprecated (503); full-text search moved to search-a-licious.
 _SEARCH_URL = "https://search.openfoodfacts.org/search"
 _SEARCH_FIELDS = "code,product_name,brands,image_url"
-_PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
 _PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags,countries_tags,nutriments"
 # Enough to pre-rank a candidate without fetching the full product. additives_tags is
 # NOT available from search (only additives_n), so promising candidates are still
@@ -63,14 +62,19 @@ class OFFClient:
         self._ttl = settings.off_cache_ttl
         self._max_retries = settings.off_max_retries
         self._retry_backoff = settings.off_retry_backoff
+        self._product_host = settings.off_product_host
+        # Staging (world.openfoodfacts.net) sits behind an HTTP Basic-auth gate.
+        # Send it per product-fetch request only, so production search-a-licious
+        # calls on the shared client are unaffected.
+        self._product_auth = ("off", "off") if settings.is_staging else None
 
-    async def _get(self, url: str, params: dict) -> httpx.Response:
+    async def _get(self, url: str, params: dict, auth=None) -> httpx.Response:
         """GET with exponential backoff retry on HTTP 429. Transport failures map to
         OFFError immediately (not retried). Status-code interpretation is left to the
         caller; a persistently rate-limited request returns the final 429 response."""
         for attempt in range(self._max_retries + 1):
             try:
-                resp = await self._client.get(url, params=params)
+                resp = await self._client.get(url, params=params, auth=auth)
             except httpx.TimeoutException:
                 raise OFFError("Request timed out", "timeout")
             except (httpx.NetworkError, httpx.ConnectError, OSError) as e:
@@ -161,8 +165,9 @@ class OFFClient:
             return cached[0]
 
         resp = await self._get(
-            _PRODUCT_URL.format(code=off_id),
+            f"https://{self._product_host}/api/v2/product/{off_id}.json",
             params={"fields": _PRODUCT_FIELDS},
+            auth=self._product_auth,
         )
 
         if resp.status_code == 404:
@@ -177,7 +182,7 @@ class OFFClient:
         if not data.get("product"):
             raise OFFError(f"Product {off_id} not found", "not_found")
 
-        product = _normalise(off_id, data["product"])
+        product = _normalise(off_id, data["product"], self._product_host)
         self._cache[off_id] = (product, time.monotonic())
         return product
 
@@ -255,7 +260,7 @@ def _is_beverage(categories_tags: list[str]) -> bool:
     return any(any(h in tag for h in _BEVERAGE_HINTS) for tag in categories_tags)
 
 
-def _normalise(off_id: str, p: dict) -> NormalisedProduct:
+def _normalise(off_id: str, p: dict, product_host: str = "world.openfoodfacts.org") -> NormalisedProduct:
     seen: set[str] = set()
     additives: list[str] = []
     for tag in p.get("additives_tags", []):
@@ -276,7 +281,7 @@ def _normalise(off_id: str, p: dict) -> NormalisedProduct:
         additives=additives,
         ingredients_text=(p.get("ingredients_text") or "").strip() or None,
         image_url=p.get("image_url") or None,
-        raw_off_url=f"https://world.openfoodfacts.org/product/{off_id}/",
+        raw_off_url=f"https://{product_host}/product/{off_id}/",
         categories=[c for c in (p.get("categories_tags") or []) if c],
         countries_tags=[c for c in (p.get("countries_tags") or []) if c],
         nutriments=_parse_nutriments(p.get("nutriments") or {}),
