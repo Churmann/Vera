@@ -406,13 +406,16 @@ def test_product_page_renders_when_alternatives_lookup_fails():
 
 
 @respx.mock
-def test_product_not_found_returns_404():
-    respx.get("https://world.openfoodfacts.org/api/v2/product/000.json").mock(
+def test_product_not_found_shows_add_form_prefilled():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422000.json").mock(
         return_value=httpx.Response(404, json={"status": 0})
     )
     with TestClient(app) as client:
-        response = client.get("/product/000")
-    assert response.status_code == 404
+        response = client.get("/product/3017620422000")
+    assert response.status_code == 200
+    body = response.text
+    assert 'action="/add"' in body
+    assert 'value="3017620422000"' in body  # barcode prefilled
 
 
 def test_nav_present_across_pages():
@@ -507,3 +510,13 @@ def test_add_page_prefills_barcode_from_query():
     with TestClient(app) as client:
         response = client.get("/add?barcode=3017620422003")
     assert 'value="3017620422003"' in response.text
+
+
+@respx.mock
+def test_empty_search_results_offer_add_product():
+    respx.get("https://search.openfoodfacts.org/search").mock(
+        return_value=httpx.Response(200, json={"hits": []})
+    )
+    with TestClient(app) as client:
+        response = client.get("/search?q=nonexistentproduct")
+    assert 'href="/add"' in response.text

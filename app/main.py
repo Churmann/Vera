@@ -89,11 +89,11 @@ def create_app() -> FastAPI:
             product = await request.app.state.off_client.fetch_product(off_id)
         except OFFError as e:
             if e.kind == "not_found":
-                return templates.TemplateResponse(
-                    request, "error.html",
-                    {"message": "Product not found on Open Food Facts."},
-                    status_code=404,
-                )
+                return templates.TemplateResponse(request, "add.html", {
+                    "barcode": off_id,
+                    "notice": "We don't have this product yet — add the details below "
+                              "and we'll score it right away.",
+                })
             return templates.TemplateResponse(
                 request, "error.html",
                 {"message": "Couldn't reach Open Food Facts — please try again."},
