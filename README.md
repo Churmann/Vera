@@ -3,7 +3,8 @@
 **The truth about what's in your food.**
 
 
-https://github.com/user-attachments/assets/c1e547c7-fd59-4d91-b4a1-69b1e1dba45d
+https://github.com/user-attachments/assets/f54e5af2-ef4a-457a-8f2c-300b4e6763d3
+
 
 
 Vera scores the healthiness and safety of food products — but unlike the popular scanner apps that hand you a single number with no explanation, Vera shows you exactly *why* a product scores the way it does, puts the evidence behind every flagged ingredient in front of you, and tells you how much to trust the data.
