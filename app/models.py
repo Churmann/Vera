@@ -19,7 +19,7 @@ class OFFError(Exception):
     def __init__(self, message: str, kind: str):
         super().__init__(message)
         self.message = message
-        self.kind = kind  # "timeout", "rate_limited", "not_found", "network_error"
+        self.kind = kind  # "timeout", "rate_limited", "not_found", "network_error", "no_credentials", "write_failed"
 
 
 @dataclass
