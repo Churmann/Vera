@@ -167,10 +167,31 @@ docker-compose up
 **Configuration** is optional — the defaults work out of the box. To customise, copy `.env.example` to `.env`:
 
 ```
+# Copy to .env for local development. For testing product submission, use staging.
 OFF_USER_AGENT=VeraApp/1.0 (your@email.com)
 OFF_REQUEST_TIMEOUT=8
 OFF_CACHE_TTL=300
+
+# Open Food Facts write target + read host.
+#   production -> world.openfoodfacts.org   (default; the live app)
+#   staging    -> world.openfoodfacts.net   (build/test product submission here first)
+OFF_ENVIRONMENT=staging
+
+# Credentials for writing products to OFF. The username is your OFF USERNAME,
+# NOT your email. Staging and production are SEPARATE accounts with separate
+# credentials. Never commit real values.
+OFF_USERNAME=
+OFF_PASSWORD=
 ```
+
+**Adding products to Open Food Facts.** Vera can submit missing products back to
+Open Food Facts from the "not found" page. This requires `OFF_USERNAME` (your OFF
+**username**, not your email) and `OFF_PASSWORD`. Build and test against
+**staging** (`OFF_ENVIRONMENT=staging`, `world.openfoodfacts.net`) first —
+staging and production are separate accounts. When deploying on **Render**, set
+`OFF_ENVIRONMENT`, `OFF_USERNAME`, and `OFF_PASSWORD` in the service's
+**Environment** settings (never commit them). With no credentials set, the app
+runs read-only and the add form reports that submission isn't configured.
 
 ---
 
