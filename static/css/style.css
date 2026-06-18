@@ -573,3 +573,9 @@ a { color: inherit; }
 .nutrient-source { margin-top: .9rem; font-size: .74rem; color: var(--color-text-muted); }
 .nutrient-source a { color: var(--color-accent); }
 .nutrient-missing-all { color: var(--color-text-muted); font-style: italic; }
+
+/* Add-product form: stacked fields (the search-form is a single-row input). */
+.add-form { display: flex; flex-direction: column; gap: 0.75rem; max-width: 28rem; margin: 1.5rem auto 0; text-align: left; }
+.add-field { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
+.add-field input { padding: 0.6rem 0.75rem; font: inherit; border: 1px solid var(--border, #ccc); border-radius: 8px; font-weight: 400; }
+.form-notice { color: #1b5e20; background: #e8f5e9; padding: 0.6rem 0.85rem; border-radius: 8px; }

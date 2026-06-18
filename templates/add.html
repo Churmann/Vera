@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Add a product — Vera{% endblock %}
+{% block content %}
+<section class="search-hero add-product">
+  <a href="/" class="back-link">← Back to search</a>
+  <h1>Add this product</h1>
+  <p class="tagline">It isn't in Open Food Facts yet. Add it and we'll score it right away — and it stays in the open database for everyone.</p>
+  {% if notice %}<p class="form-notice">{{ notice }}</p>{% endif %}
+  {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
+  <form action="/add" method="post" class="add-form">
+    <label class="add-field">Barcode
+      <input name="barcode" inputmode="numeric" autocomplete="off"
+             placeholder="e.g. 3017620422003" value="{{ barcode or '' }}" required>
+    </label>
+    <label class="add-field">Product name
+      <input name="name" autocomplete="off" value="{{ name or '' }}" required>
+    </label>
+    <label class="add-field">Brand
+      <input name="brand" autocomplete="off" value="{{ brand or '' }}">
+    </label>
+    <label class="add-field">Category
+      <input name="category" autocomplete="off" placeholder="e.g. Chocolate spreads" value="{{ category or '' }}">
+    </label>
+    <label class="add-field">Quantity
+      <input name="quantity" autocomplete="off" placeholder="e.g. 400 g" value="{{ quantity or '' }}">
+    </label>
+    <button type="submit">Add &amp; score</button>
+  </form>
+</section>
+{% endblock %}

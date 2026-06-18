@@ -488,3 +488,22 @@ def test_product_page_renders_nutrient_bars():
     assert "nutrient-bar" in body          # the bar component rendered
     assert "Saturated fat" in body
     assert "per 100 g" in body
+
+
+def test_add_page_renders_form():
+    with TestClient(app) as client:
+        response = client.get("/add")
+    assert response.status_code == 200
+    body = response.text
+    assert 'action="/add"' in body and 'method="post"' in body
+    assert 'name="barcode"' in body
+    assert 'name="name"' in body
+    assert 'name="brand"' in body
+    assert 'name="category"' in body
+    assert 'name="quantity"' in body
+
+
+def test_add_page_prefills_barcode_from_query():
+    with TestClient(app) as client:
+        response = client.get("/add?barcode=3017620422003")
+    assert 'value="3017620422003"' in response.text

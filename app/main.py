@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -11,6 +11,7 @@ from app.alternatives import find_better_alternatives
 from app.config import Settings
 from app.models import OFFError
 from app.off_client import OFFClient
+from app.off_writer import OFFWriter
 from app.presentation import group_factors
 from app.scoring.additive_scorer import AdditiveScorer
 from app.scoring.food_engine import FoodScoringEngine, uncapped_overall, weighted_overall, weighted_score
@@ -28,8 +29,10 @@ def create_app() -> FastAPI:
             BASE_DIR / "data" / "additives_curated.yaml",
         )
         client = OFFClient(settings)
+        writer = OFFWriter(settings)
         engine = FoodScoringEngine(AdditiveScorer(db))
         app.state.off_client = client
+        app.state.off_writer = writer
         app.state.scoring_engine = engine
         app.state.settings = settings
         yield
@@ -58,6 +61,10 @@ def create_app() -> FastAPI:
     @app.get("/overview", response_class=HTMLResponse)
     async def overview_page(request: Request):
         return templates.TemplateResponse(request, "overview.html")
+
+    @app.get("/add", response_class=HTMLResponse)
+    async def add_product_page(request: Request, barcode: str = ""):
+        return templates.TemplateResponse(request, "add.html", {"barcode": barcode})
 
     @app.get("/search", response_class=HTMLResponse)
     async def search_results(request: Request, q: str = ""):
