@@ -6,6 +6,27 @@ from app.config import Settings
 from app.models import OFFError
 
 
+def use_os_trust_store() -> None:
+    """Verify the SDK's TLS against the OS trust store, mirroring the read path.
+
+    OFFClient already routes reads through ``truststore`` (see
+    ``app/off_client.py`` ``_ssl_verify``) so they survive a TLS-intercepting
+    proxy/antivirus. The openfoodfacts SDK builds its own requests/urllib3
+    session with no hook to inject an SSL context, so we patch the stdlib once at
+    startup instead. On a normal host (including Render) the OS store holds the
+    standard CA roots, so this verifies exactly like certifi — a no-op in
+    practice; behind TLS interception it lets the locally-trusted root validate
+    so writes succeed like reads. If ``truststore`` is unavailable it's skipped,
+    falling back to the SDK's certifi bundle — same defensive fallback as reads.
+    """
+    try:
+        import truststore
+
+        truststore.inject_into_ssl()
+    except Exception:
+        pass
+
+
 class OFFWriter:
     """Writes products to Open Food Facts via the official SDK.
 

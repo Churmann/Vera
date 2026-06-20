@@ -14,7 +14,7 @@ from app.alternatives import find_better_alternatives
 from app.config import Settings
 from app.models import OFFError
 from app.off_client import OFFClient
-from app.off_writer import OFFWriter
+from app.off_writer import OFFWriter, use_os_trust_store
 from app.presentation import group_factors
 from app.scoring.additive_scorer import AdditiveScorer
 from app.scoring.food_engine import FoodScoringEngine, uncapped_overall, weighted_overall, weighted_score
@@ -59,6 +59,8 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        # Route the OFF SDK's writes through the OS trust store, as reads already are.
+        use_os_trust_store()
         db = AdditiveDB(
             BASE_DIR / "data" / "additives_off_taxonomy.json",
             BASE_DIR / "data" / "additives_curated.yaml",
