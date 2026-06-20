@@ -1,4 +1,5 @@
 import asyncio
+import base64
 
 import requests
 
@@ -37,6 +38,8 @@ class OFFWriter:
     tests need neither network nor real credentials.
     """
 
+    _IMAGE_FIELDS = ("front", "ingredients", "nutrition")
+
     def __init__(self, settings: Settings, api_factory=None):
         self._settings = settings
         self._api_factory = api_factory or self._build_api
@@ -68,3 +71,34 @@ class OFFWriter:
 
     def _write(self, body):
         return self._api_factory().product.update(body)
+
+    async def add_product_photos(self, *, barcode, images):
+        """Upload front/ingredients/nutrition photos for ``barcode``.
+
+        ``images`` maps field name -> raw bytes. Each is base64-encoded and
+        uploaded via ``product.upload_image(..., selected={field: {lang: {}}})``
+        in a threadpool (the SDK is synchronous). Uploading an image to a barcode
+        creates the product in OFF, so no separate text write is needed."""
+        if not self._settings.off_username or not self._settings.off_password:
+            raise OFFError("Open Food Facts credentials are not configured", "no_credentials")
+        try:
+            await asyncio.to_thread(self._upload_all, barcode, images)
+        except requests.RequestException as e:
+            raise OFFError(f"Failed to upload product photos to Open Food Facts: {e}", "write_failed")
+
+    def _upload_all(self, barcode, images):
+        api = self._api_factory()
+        lang = self._settings.off_image_lang
+        for field in self._IMAGE_FIELDS:
+            b64 = base64.b64encode(images[field]).decode("utf-8")
+            resp = api.product.upload_image(
+                code=barcode,
+                image_data_base64=b64,
+                selected={field: {lang: {}}},
+            )
+            if not getattr(resp, "ok", True):
+                raise OFFError(
+                    f"Open Food Facts rejected the image upload "
+                    f"({getattr(resp, 'status_code', '?')})",
+                    "write_failed",
+                )
