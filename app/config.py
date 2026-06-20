@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     off_username: str | None = None
     off_password: str | None = None
 
+    # Photo-upload + pending-state tuning (all overridable via env).
+    off_max_image_bytes: int = 12 * 1024 * 1024   # 12 MB per photo
+    off_pending_window_seconds: int = 900          # 15 min: pending -> final cutoff
+    off_image_lang: str = "en"                     # language code for selected images
+
     @property
     def is_staging(self) -> bool:
         return self.off_environment.strip().lower() == "staging"

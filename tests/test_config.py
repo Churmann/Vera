@@ -18,3 +18,11 @@ def test_credentials_default_to_none():
     s = Settings(_env_file=None)
     assert s.off_username is None
     assert s.off_password is None
+
+
+def test_image_and_pending_defaults():
+    from app.config import Settings
+    s = Settings(_env_file=None)
+    assert s.off_max_image_bytes == 12 * 1024 * 1024
+    assert s.off_pending_window_seconds == 900
+    assert s.off_image_lang == "en"
