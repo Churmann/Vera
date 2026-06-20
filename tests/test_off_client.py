@@ -379,3 +379,18 @@ async def test_fetch_product_uses_staging_host_with_basic_auth():
     auth = route.calls.last.request.headers["authorization"]
     assert auth == "Basic " + base64.b64encode(b"off:off").decode()
     assert product.raw_off_url == "https://world.openfoodfacts.net/product/123/"
+
+
+@respx.mock
+async def test_fetch_product_parses_created_t(settings):
+    respx.get("https://world.openfoodfacts.org/api/v2/product/123.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "X", "created_t": 1700000000,
+        }})
+    )
+    client = OFFClient(settings)
+    try:
+        product = await client.fetch_product("123")
+    finally:
+        await client.aclose()
+    assert product.created_t == 1700000000

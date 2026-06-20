@@ -28,7 +28,7 @@ def _ssl_verify():
 # /cgi/search.pl is permanently deprecated (503); full-text search moved to search-a-licious.
 _SEARCH_URL = "https://search.openfoodfacts.org/search"
 _SEARCH_FIELDS = "code,product_name,brands,image_url"
-_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags,countries_tags,nutriments"
+_PRODUCT_FIELDS = "code,product_name,brands,image_url,nutriscore_grade,nova_group,additives_tags,ingredients_text,categories_tags,countries_tags,nutriments,created_t"
 # Enough to pre-rank a candidate without fetching the full product. additives_tags is
 # NOT available from search (only additives_n), so promising candidates are still
 # fetched in full for accurate additive scoring.
@@ -272,6 +272,9 @@ def _normalise(off_id: str, p: dict, product_host: str = "world.openfoodfacts.or
                 seen.add(base)
                 additives.append(base)
 
+    raw_created = p.get("created_t")
+    created_t = int(raw_created) if isinstance(raw_created, (int, float)) else None
+
     return NormalisedProduct(
         off_id=off_id,
         name=(p.get("product_name") or "").strip() or "Unknown product",
@@ -286,4 +289,5 @@ def _normalise(off_id: str, p: dict, product_host: str = "world.openfoodfacts.or
         countries_tags=[c for c in (p.get("countries_tags") or []) if c],
         nutriments=_parse_nutriments(p.get("nutriments") or {}),
         is_beverage=_is_beverage(p.get("categories_tags") or []),
+        created_t=created_t,
     )

@@ -58,6 +58,9 @@ class NormalisedProduct:
     countries_tags: list[str] = field(default_factory=list)
     nutriments: dict[str, float] = field(default_factory=dict)
     is_beverage: bool = False
+    # OFF created_t (unix seconds) — when the product was first added. Used to
+    # time-bound the post-submission "still reading the label" pending state.
+    created_t: int | None = None
 
 
 @dataclass
