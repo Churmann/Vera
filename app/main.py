@@ -163,10 +163,15 @@ def create_app() -> FastAPI:
                 request, "add.html", {**ctx, "error": message}, status_code=status,
             )
 
-        # One immediate bounded attempt; the product page owns the pending UI.
-        await _refetch_after_write(
-            request.app.state.off_client, clean, base_backoff=settings.off_retry_backoff,
-        )
+        # One immediate bounded attempt to warm the cache; the product page owns
+        # the pending UI. A flaky refetch (e.g. a transient 5xx) must not turn a
+        # successful upload into a 500 — fall through to the pending redirect.
+        try:
+            await _refetch_after_write(
+                request.app.state.off_client, clean, base_backoff=settings.off_retry_backoff,
+            )
+        except OFFError:
+            pass
         return RedirectResponse(url=f"/product/{clean}?submitted=1", status_code=303)
 
     @app.get("/search", response_class=HTMLResponse)
@@ -198,7 +203,7 @@ def create_app() -> FastAPI:
                     # product record yet. Show a pending shell, not the capture
                     # page (which would loop the user back to re-uploading).
                     return templates.TemplateResponse(request, "product_pending.html", {
-                        "barcode": off_id, "product": None, "state": "pending", "submitted": True,
+                        "barcode": off_id, "product": None, "state": "pending",
                         "off_url": f"https://{settings.off_product_host}/product/{off_id}/",
                     })
                 return templates.TemplateResponse(request, "add.html", {
@@ -218,7 +223,7 @@ def create_app() -> FastAPI:
             )
             return templates.TemplateResponse(request, "product_pending.html", {
                 "barcode": off_id, "product": product,
-                "state": "pending" if fresh else "final", "submitted": submitted,
+                "state": "pending" if fresh else "final",
                 "off_url": product.raw_off_url,
             })
 

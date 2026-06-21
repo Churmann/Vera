@@ -514,18 +514,22 @@ def test_empty_search_results_offer_add_product():
 def _img(prefix=b"\xff\xd8\xff"):
     return ("p.jpg", prefix + b"imagedata", "image/jpeg")
 
+
 def _photo_files():
     return {"front_photo": _img(), "ingredients_photo": _img(), "nutrition_photo": _img()}
+
 
 class _StubPhotoWriter:
     def __init__(self, raise_kind=None):
         self.calls = []
         self._raise_kind = raise_kind
+
     async def add_product_photos(self, **kwargs):
         self.calls.append(kwargs)
         if self._raise_kind:
             from app.models import OFFError
             raise OFFError("boom", self._raise_kind)
+
 
 def test_add_page_renders_photo_capture():
     with TestClient(app) as client:
@@ -540,6 +544,7 @@ def test_add_page_renders_photo_capture():
     assert 'name="name"' not in body
     assert 'name="brand"' not in body
     assert 'name="category"' not in body
+    assert 'name="quantity"' not in body
 
 @respx.mock
 def test_add_submit_uploads_photos_and_redirects_with_submitted_flag():
@@ -558,6 +563,26 @@ def test_add_submit_uploads_photos_and_redirects_with_submitted_flag():
     call = app.state.off_writer.calls[0]
     assert call["barcode"] == "3017620422003"
     assert set(call["images"]) == {"front", "ingredients", "nutrition"}
+
+
+@respx.mock
+def test_add_submit_redirects_even_when_refetch_errors():
+    # Upload succeeds, but the immediate cache-warming re-fetch hits a transient
+    # 5xx. The user must still land on the pending product page, not a 500.
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(503)
+    )
+    with TestClient(app) as client:
+        app.state.off_writer = _StubPhotoWriter()
+        app.state.settings.off_retry_backoff = 0.0
+        response = client.post(
+            "/add", data={"barcode": "3017620422003"},
+            files=_photo_files(), follow_redirects=False,
+        )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/product/3017620422003?submitted=1"
+    assert app.state.off_writer.calls[0]["barcode"] == "3017620422003"
+
 
 def test_add_submit_missing_nutrition_photo_blocks_with_message():
     with TestClient(app) as client:
@@ -621,6 +646,7 @@ def test_product_pending_when_incomplete_and_fresh():
 def test_product_final_when_incomplete_and_stale():
     respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
         return_value=httpx.Response(200, json={"product": {
+            # created a day ago — well past the 900s (15 min) pending window
             "product_name": "Old Snack", "created_t": int(time.time()) - 86400,
         }})
     )
