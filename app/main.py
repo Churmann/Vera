@@ -3,13 +3,14 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
 from app.additive_db import AdditiveDB
+from app.image_validation import validate_image
 from app.alternatives import find_better_alternatives
 from app.config import Settings
 from app.models import OFFError
@@ -20,6 +21,8 @@ from app.scoring.additive_scorer import AdditiveScorer
 from app.scoring.food_engine import FoodScoringEngine, uncapped_overall, weighted_overall, weighted_score
 
 BASE_DIR = Path(__file__).parent.parent
+
+_PHOTO_LABELS = {"front": "Front-of-pack", "ingredients": "Ingredients", "nutrition": "Nutrition"}
 
 
 def _clean_barcode(raw: str) -> str | None:
@@ -107,38 +110,41 @@ def create_app() -> FastAPI:
     async def add_product_submit(
         request: Request,
         barcode: str = Form(""),
-        name: str = Form(""),
-        brand: str = Form(""),
-        category: str = Form(""),
-        quantity: str = Form(""),
+        front_photo: UploadFile | None = File(None),
+        ingredients_photo: UploadFile | None = File(None),
+        nutrition_photo: UploadFile | None = File(None),
     ):
-        name = name.strip()
+        settings = request.app.state.settings
+        ctx = {"barcode": barcode.strip()}
         clean = _clean_barcode(barcode)
-        # Preserve exactly what the user typed when re-rendering on any error.
-        form_ctx = {
-            "barcode": barcode.strip(), "name": name, "brand": brand.strip(),
-            "category": category.strip(), "quantity": quantity.strip(),
-        }
         if clean is None:
             return templates.TemplateResponse(
                 request, "add.html",
-                {**form_ctx, "error": "Enter a valid barcode — 8 to 14 digits."},
-                status_code=400,
-            )
-        if not name:
-            return templates.TemplateResponse(
-                request, "add.html",
-                {**form_ctx, "error": "Product name is required."},
+                {**ctx, "error": "Enter a valid barcode — 8 to 14 digits."},
                 status_code=400,
             )
 
+        uploads = {"front": front_photo, "ingredients": ingredients_photo, "nutrition": nutrition_photo}
+        images: dict[str, bytes] = {}
+        for field, upload in uploads.items():
+            if upload is None or not upload.filename:
+                return templates.TemplateResponse(
+                    request, "add.html",
+                    {**ctx, "error": f"{_PHOTO_LABELS[field]} photo needed."},
+                    status_code=400,
+                )
+            data = await upload.read()
+            err = validate_image(data, max_bytes=settings.off_max_image_bytes)
+            if err:
+                return templates.TemplateResponse(
+                    request, "add.html",
+                    {**ctx, "error": f"{_PHOTO_LABELS[field]} photo: {err}"},
+                    status_code=400,
+                )
+            images[field] = data
+
         try:
-            await request.app.state.off_writer.add_product(
-                barcode=clean, name=name,
-                brand=form_ctx["brand"] or None,
-                category=form_ctx["category"] or None,
-                quantity=form_ctx["quantity"] or None,
-            )
+            await request.app.state.off_writer.add_product_photos(barcode=clean, images=images)
         except OFFError as e:
             if e.kind == "no_credentials":
                 message = Markup("Submitting products isn't configured on this server yet.")
@@ -147,20 +153,14 @@ def create_app() -> FastAPI:
                 message = Markup("Couldn't save to Open Food Facts — please try again.")
                 status = 502
             return templates.TemplateResponse(
-                request, "add.html", {**form_ctx, "error": message}, status_code=status,
+                request, "add.html", {**ctx, "error": message}, status_code=status,
             )
 
-        settings = request.app.state.settings
-        product = await _refetch_after_write(
+        # One immediate bounded attempt; the product page owns the pending UI.
+        await _refetch_after_write(
             request.app.state.off_client, clean, base_backoff=settings.off_retry_backoff,
         )
-        if product is None:
-            return templates.TemplateResponse(request, "add.html", {
-                **form_ctx,
-                "notice": "Added to Open Food Facts — it may take a moment to appear. "
-                          "Refresh shortly to see its Vera score.",
-            })
-        return RedirectResponse(url=f"/product/{clean}", status_code=303)
+        return RedirectResponse(url=f"/product/{clean}?submitted=1", status_code=303)
 
     @app.get("/search", response_class=HTMLResponse)
     async def search_results(request: Request, q: str = ""):

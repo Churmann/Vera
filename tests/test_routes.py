@@ -493,19 +493,6 @@ def test_product_page_renders_nutrient_bars():
     assert "per 100 g" in body
 
 
-def test_add_page_renders_form():
-    with TestClient(app) as client:
-        response = client.get("/add")
-    assert response.status_code == 200
-    body = response.text
-    assert 'action="/add"' in body and 'method="post"' in body
-    assert 'name="barcode"' in body
-    assert 'name="name"' in body
-    assert 'name="brand"' in body
-    assert 'name="category"' in body
-    assert 'name="quantity"' in body
-
-
 def test_add_page_prefills_barcode_from_query():
     with TestClient(app) as client:
         response = client.get("/add?barcode=3017620422003")
@@ -522,105 +509,94 @@ def test_empty_search_results_offer_add_product():
     assert 'href="/add"' in response.text
 
 
-class _StubWriter:
-    """Captures add_product calls; optionally raises to simulate failure."""
+def _img(prefix=b"\xff\xd8\xff"):
+    return ("p.jpg", prefix + b"imagedata", "image/jpeg")
+
+def _photo_files():
+    return {"front_photo": _img(), "ingredients_photo": _img(), "nutrition_photo": _img()}
+
+class _StubPhotoWriter:
     def __init__(self, raise_kind=None):
         self.calls = []
         self._raise_kind = raise_kind
-
-    async def add_product(self, **kwargs):
+    async def add_product_photos(self, **kwargs):
         self.calls.append(kwargs)
         if self._raise_kind:
             from app.models import OFFError
             raise OFFError("boom", self._raise_kind)
 
-
-def test_add_submit_rejects_invalid_barcode_and_keeps_values():
+def test_add_page_renders_photo_capture():
     with TestClient(app) as client:
-        app.state.off_writer = _StubWriter()
-        response = client.post("/add", data={"barcode": "12", "name": "Thing"})
-    assert "8" in response.text and "14" in response.text  # validation message mentions the range
-    assert 'value="Thing"' in response.text                # typed name preserved
-    assert app.state.off_writer.calls == []                # never attempted the write
-
-
-def test_add_submit_requires_name():
-    with TestClient(app) as client:
-        app.state.off_writer = _StubWriter()
-        response = client.post("/add", data={"barcode": "3017620422003", "name": "  "})
-    assert "name is required" in response.text.lower()
-    assert app.state.off_writer.calls == []
-
-
-def test_add_submit_trims_whitespace_from_barcode_before_validating():
-    with TestClient(app) as client:
-        stub = _StubWriter()
-        app.state.off_writer = stub
-        router = respx.mock(assert_all_called=False)
-        with router:
-            router.get(
-                "https://world.openfoodfacts.org/api/v2/product/3017620422003.json"
-            ).mock(return_value=httpx.Response(200, json={"product": {"product_name": "Nutella"}}))
-            response = client.post(
-                "/add",
-                data={"barcode": "  3017620422003\n", "name": "Nutella"},
-                follow_redirects=False,
-            )
-    assert response.status_code == 303
-    assert response.headers["location"] == "/product/3017620422003"
-    assert stub.calls[0]["barcode"] == "3017620422003"   # trimmed before the write
-
-
-def test_add_submit_missing_credentials_shows_friendly_message():
-    with TestClient(app) as client:
-        app.state.off_writer = _StubWriter(raise_kind="no_credentials")
-        response = client.post("/add", data={"barcode": "3017620422003", "name": "Nutella"})
-    assert "isn't configured" in response.text.lower() or "not configured" in response.text.lower()
-    assert 'value="Nutella"' in response.text  # values preserved
-
-
-def test_add_submit_write_failure_shows_friendly_message():
-    with TestClient(app) as client:
-        app.state.off_writer = _StubWriter(raise_kind="write_failed")
-        response = client.post("/add", data={"barcode": "3017620422003", "name": "Nutella"})
-    assert "couldn't save" in response.text.lower()
-    assert 'value="Nutella"' in response.text
-
+        body = client.get("/add").text
+    assert 'enctype="multipart/form-data"' in body
+    assert 'name="barcode"' in body
+    assert 'name="front_photo"' in body
+    assert 'name="ingredients_photo"' in body
+    assert 'name="nutrition_photo"' in body
+    assert 'type="file"' in body
+    # The text fields are gone.
+    assert 'name="name"' not in body
+    assert 'name="brand"' not in body
+    assert 'name="category"' not in body
 
 @respx.mock
-def test_add_submit_success_redirects_to_product():
-    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
-        return_value=httpx.Response(200, json={"product": {"product_name": "Nutella"}})
-    )
-    with TestClient(app) as client:
-        app.state.off_writer = _StubWriter()
-        response = client.post(
-            "/add",
-            data={"barcode": "3017620422003", "name": "Nutella",
-                  "brand": "Ferrero", "category": "Chocolate spreads", "quantity": "400 g"},
-            follow_redirects=False,
-        )
-    assert response.status_code == 303
-    assert response.headers["location"] == "/product/3017620422003"
-    call = app.state.off_writer.calls[0]
-    assert call == {"barcode": "3017620422003", "name": "Nutella",
-                    "brand": "Ferrero", "category": "Chocolate spreads", "quantity": "400 g"}
-
-
-@respx.mock
-def test_add_submit_not_yet_queryable_shows_refresh_notice():
-    # Write succeeds, but every re-fetch returns 404 (propagation delay).
+def test_add_submit_uploads_photos_and_redirects_with_submitted_flag():
     respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
         return_value=httpx.Response(404, json={"status": 0})
     )
     with TestClient(app) as client:
-        # off_retry_backoff is 0.5 by default; force 0 so the bounded loop is instant.
+        app.state.off_writer = _StubPhotoWriter()
         app.state.settings.off_retry_backoff = 0.0
-        app.state.off_writer = _StubWriter()
         response = client.post(
-            "/add",
-            data={"barcode": "3017620422003", "name": "Nutella"},
-            follow_redirects=False,
+            "/add", data={"barcode": "3017620422003"},
+            files=_photo_files(), follow_redirects=False,
         )
-    assert response.status_code == 200
-    assert "refresh shortly" in response.text.lower()
+    assert response.status_code == 303
+    assert response.headers["location"] == "/product/3017620422003?submitted=1"
+    call = app.state.off_writer.calls[0]
+    assert call["barcode"] == "3017620422003"
+    assert set(call["images"]) == {"front", "ingredients", "nutrition"}
+
+def test_add_submit_missing_nutrition_photo_blocks_with_message():
+    with TestClient(app) as client:
+        app.state.off_writer = _StubPhotoWriter()
+        files = {"front_photo": _img(), "ingredients_photo": _img()}
+        response = client.post("/add", data={"barcode": "3017620422003"}, files=files)
+    assert response.status_code == 400
+    assert "Nutrition photo needed" in response.text
+    assert app.state.off_writer.calls == []
+
+def test_add_submit_rejects_renamed_non_image():
+    with TestClient(app) as client:
+        app.state.off_writer = _StubPhotoWriter()
+        files = {
+            "front_photo": ("evil.jpg", b"%PDF-1.4 not an image", "image/jpeg"),
+            "ingredients_photo": _img(),
+            "nutrition_photo": _img(),
+        }
+        response = client.post("/add", data={"barcode": "3017620422003"}, files=files)
+    assert response.status_code == 400
+    assert "JPG, PNG, or WEBP" in response.text
+    assert app.state.off_writer.calls == []
+
+def test_add_submit_rejects_invalid_barcode():
+    with TestClient(app) as client:
+        app.state.off_writer = _StubPhotoWriter()
+        response = client.post("/add", data={"barcode": "12"}, files=_photo_files())
+    assert response.status_code == 400
+    assert "8" in response.text and "14" in response.text
+    assert app.state.off_writer.calls == []
+
+def test_add_submit_missing_credentials_message():
+    with TestClient(app) as client:
+        app.state.off_writer = _StubPhotoWriter(raise_kind="no_credentials")
+        response = client.post("/add", data={"barcode": "3017620422003"}, files=_photo_files())
+    assert response.status_code == 503
+    assert "configured" in response.text.lower()
+
+def test_add_submit_write_failure_message():
+    with TestClient(app) as client:
+        app.state.off_writer = _StubPhotoWriter(raise_kind="write_failed")
+        response = client.post("/add", data={"barcode": "3017620422003"}, files=_photo_files())
+    assert response.status_code == 502
+    assert "couldn't save" in response.text.lower()

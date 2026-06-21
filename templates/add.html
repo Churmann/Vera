@@ -1,30 +1,46 @@
 {% extends "base.html" %}
-{% block title %}Add a product — Vera{% endblock %}
+{% block title %}Add this product — Vera{% endblock %}
 {% block content %}
 <section class="search-hero add-product">
   <a href="/" class="back-link">← Back to search</a>
   <h1>Add this product</h1>
-  <p class="tagline">It isn't in Open Food Facts yet. Add it and we'll score it right away — and it stays in the open database for everyone.</p>
+  <p class="tagline">It isn't in Open Food Facts yet. Photograph the pack and we'll read it and score it — and it stays in the open database for everyone.</p>
+
+  <div class="photo-requirements">
+    <p class="photo-requirements-title">You'll need three clear photos:</p>
+    <ul>
+      <li><strong>Front of pack</strong> — the product name and brand</li>
+      <li><strong>Ingredients list</strong> — the full list, in focus</li>
+      <li><strong>Nutrition table</strong> — the per-100g values</li>
+    </ul>
+    <p class="photo-requirements-note">All three are required so we can score it accurately.</p>
+  </div>
+
   {% if notice %}<p class="form-notice">{{ notice }}</p>{% endif %}
   {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
-  <form action="/add" method="post" class="add-form">
+
+  <form action="/add" method="post" enctype="multipart/form-data" class="add-form">
     <label class="add-field">Barcode
       <input name="barcode" inputmode="numeric" autocomplete="off"
              placeholder="e.g. 3017620422003" value="{{ barcode or '' }}" required>
     </label>
-    <label class="add-field">Product name
-      <input name="name" autocomplete="off" value="{{ name or '' }}" required>
+
+    <label class="add-field photo-field">Front of pack
+      <span class="photo-guidance">Fill the frame; make the name and brand readable.</span>
+      <input type="file" name="front_photo" accept="image/jpeg,image/png,image/webp" capture="environment" required>
     </label>
-    <label class="add-field">Brand
-      <input name="brand" autocomplete="off" value="{{ brand or '' }}">
+
+    <label class="add-field photo-field">Ingredients list
+      <span class="photo-guidance">Get the whole list in focus, avoid glare.</span>
+      <input type="file" name="ingredients_photo" accept="image/jpeg,image/png,image/webp" capture="environment" required>
     </label>
-    <label class="add-field">Category
-      <input name="category" autocomplete="off" placeholder="e.g. Chocolate spreads" value="{{ category or '' }}">
+
+    <label class="add-field photo-field">Nutrition table
+      <span class="photo-guidance">Capture all the per-100g values clearly.</span>
+      <input type="file" name="nutrition_photo" accept="image/jpeg,image/png,image/webp" capture="environment" required>
     </label>
-    <label class="add-field">Quantity
-      <input name="quantity" autocomplete="off" placeholder="e.g. 400 g" value="{{ quantity or '' }}">
-    </label>
-    <button type="submit">Add &amp; score</button>
+
+    <button type="submit">Upload &amp; score</button>
   </form>
 </section>
 {% endblock %}

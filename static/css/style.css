@@ -579,3 +579,14 @@ a { color: inherit; }
 .add-field { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
 .add-field input { padding: 0.6rem 0.75rem; font: inherit; border: 1px solid var(--border, #ccc); border-radius: 8px; font-weight: 400; }
 .form-notice { color: #1b5e20; background: #e8f5e9; padding: 0.6rem 0.85rem; border-radius: 8px; }
+
+/* Photo-capture add form */
+.photo-requirements { max-width: 28rem; margin: 1.25rem auto 0; text-align: left; background: var(--color-unknown-bg); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 0.85rem 1rem; }
+.photo-requirements-title { font-weight: 600; margin: 0 0 0.4rem; }
+.photo-requirements ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.photo-requirements-note { color: var(--color-text-muted); font-size: .85rem; margin: 0.5rem 0 0; }
+.photo-field { gap: 0.35rem; }
+.photo-guidance { font-weight: 400; font-size: .82rem; color: var(--color-text-muted); }
+.photo-field input[type="file"] { font: inherit; font-weight: 400; }
+.add-form button { margin-top: 0.5rem; padding: 0.7rem 1rem; background: var(--color-accent); color: #fff; border: none; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer; }
+.add-form button:hover { opacity: .88; }
