@@ -54,24 +54,6 @@ class OFFWriter:
             environment=Environment.net if self._settings.is_staging else Environment.org,
         )
 
-    async def add_product(self, *, barcode, name, brand=None, category=None, quantity=None):
-        if not self._settings.off_username or not self._settings.off_password:
-            raise OFFError("Open Food Facts credentials are not configured", "no_credentials")
-        body = {"code": barcode, "product_name": name}
-        if brand:
-            body["brands"] = brand
-        if category:
-            body["categories"] = category
-        if quantity:
-            body["quantity"] = quantity
-        try:
-            await asyncio.to_thread(self._write, body)
-        except requests.RequestException as e:
-            raise OFFError(f"Failed to write product to Open Food Facts: {e}", "write_failed")
-
-    def _write(self, body):
-        return self._api_factory().product.update(body)
-
     async def add_product_photos(self, *, barcode, images):
         """Upload front/ingredients/nutrition photos for ``barcode``.
 
