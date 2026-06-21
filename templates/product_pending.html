@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{% if product %}{{ product.name }}{% else %}Reading your photos{% endif %} — Vera{% endblock %}
+{% block content %}
+<section class="product-pending">
+  <a href="/" class="back-link">← Back to search</a>
+  {% if product and product.image_url %}
+  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-hero-img">
+  {% endif %}
+  <h1>{% if product %}{{ product.name }}{% else %}Thanks — photos received{% endif %}</h1>
+  {% if product and product.brand %}<p class="brand">{{ product.brand }}</p>{% endif %}
+
+  {% if state == "pending" %}
+  <div class="pending-banner">
+    <p><strong>We're still reading the label.</strong> Your photos are with Open Food Facts and the score will fill in shortly — this can take a few minutes.</p>
+  </div>
+  <div class="pending-actions">
+    <a class="check-again" href="/product/{{ barcode }}?submitted=1">Check again</a>
+    <a class="off-link" href="{{ off_url }}" target="_blank" rel="noopener">View on Open Food Facts ↗</a>
+  </div>
+  {% else %}
+  <div class="pending-banner pending-banner--final">
+    <p><strong>We couldn't read enough from the photos to score this yet.</strong> The product is now in Open Food Facts and its details may be completed over time.</p>
+  </div>
+  <div class="pending-actions">
+    <a class="off-link" href="{{ off_url }}" target="_blank" rel="noopener">View on Open Food Facts ↗</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -590,3 +590,11 @@ a { color: inherit; }
 .photo-field input[type="file"] { font: inherit; font-weight: 400; }
 .add-form button { margin-top: 0.5rem; padding: 0.7rem 1rem; background: var(--color-accent); color: #fff; border: none; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer; }
 .add-form button:hover { opacity: .88; }
+
+/* Pending / partial product state */
+.product-pending { max-width: 32rem; margin: 0 auto; text-align: center; }
+.pending-banner { background: var(--color-moderate-bg); border: 1px solid var(--color-moderate); color: var(--color-text); border-radius: var(--radius); padding: 0.85rem 1rem; margin: 1rem 0; text-align: left; }
+.pending-banner--final { background: var(--color-unknown-bg); border-color: var(--color-border); }
+.pending-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.check-again { display: inline-block; padding: 0.6rem 1rem; background: var(--color-accent); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; }
+.check-again:hover { opacity: .88; }

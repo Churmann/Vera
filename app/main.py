@@ -57,6 +57,13 @@ async def _refetch_after_write(off_client, barcode, *, base_backoff, max_retries
     return None
 
 
+def _is_awaiting_extraction(product) -> bool:
+    """True when Robotoff hasn't extracted enough to produce a meaningful score:
+    no Nutri-Score AND no nutriments. (When True, nutriments is empty by
+    definition, so the partial view shows image + name only.)"""
+    return product.nutriscore_grade is None and not product.nutriments
+
+
 def create_app() -> FastAPI:
     settings = Settings()
 
@@ -180,20 +187,40 @@ def create_app() -> FastAPI:
         )
 
     @app.get("/product/{off_id}", response_class=HTMLResponse)
-    async def product_score(request: Request, off_id: str):
+    async def product_score(request: Request, off_id: str, submitted: bool = False):
+        settings = request.app.state.settings
         try:
             product = await request.app.state.off_client.fetch_product(off_id)
         except OFFError as e:
             if e.kind == "not_found":
+                if submitted:
+                    # Photos just uploaded; OFF may not have materialised the
+                    # product record yet. Show a pending shell, not the capture
+                    # page (which would loop the user back to re-uploading).
+                    return templates.TemplateResponse(request, "product_pending.html", {
+                        "barcode": off_id, "product": None, "state": "pending", "submitted": True,
+                        "off_url": f"https://{settings.off_product_host}/product/{off_id}/",
+                    })
                 return templates.TemplateResponse(request, "add.html", {
                     "barcode": off_id,
-                    "notice": "We don't have this product yet — add the details below "
-                              "and we'll score it right away.",
+                    "notice": "We don't have this product yet — add its photos below "
+                              "and we'll score it once they're read.",
                 })
             return templates.TemplateResponse(
                 request, "error.html",
                 {"message": "Couldn't reach Open Food Facts — please try again."},
             )
+
+        if _is_awaiting_extraction(product):
+            fresh = (
+                product.created_t is not None
+                and (time.time() - product.created_t) < settings.off_pending_window_seconds
+            )
+            return templates.TemplateResponse(request, "product_pending.html", {
+                "barcode": off_id, "product": product,
+                "state": "pending" if fresh else "final", "submitted": submitted,
+                "off_url": product.raw_off_url,
+            })
 
         result = request.app.state.scoring_engine.score(product)
         overall_score = weighted_overall(result)

@@ -1,3 +1,5 @@
+import time
+
 import httpx
 import respx
 from fastapi.testclient import TestClient
@@ -600,3 +602,51 @@ def test_add_submit_write_failure_message():
         response = client.post("/add", data={"barcode": "3017620422003"}, files=_photo_files())
     assert response.status_code == 502
     assert "couldn't save" in response.text.lower()
+
+
+@respx.mock
+def test_product_pending_when_incomplete_and_fresh():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "New Snack", "created_t": int(time.time()),
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    assert response.status_code == 200
+    assert "still reading the label" in response.text.lower()
+    assert "Check again" in response.text
+
+@respx.mock
+def test_product_final_when_incomplete_and_stale():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(200, json={"product": {
+            "product_name": "Old Snack", "created_t": int(time.time()) - 86400,
+        }})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003")
+    assert response.status_code == 200
+    assert "couldn't read enough" in response.text.lower()
+    assert "Check again" not in response.text
+
+@respx.mock
+def test_product_pending_shell_when_submitted_but_not_found():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422003.json").mock(
+        return_value=httpx.Response(404, json={"status": 0})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422003?submitted=1")
+    assert response.status_code == 200
+    assert "photos received" in response.text.lower()
+    assert "Check again" in response.text
+
+@respx.mock
+def test_product_not_found_not_submitted_shows_capture_page():
+    respx.get("https://world.openfoodfacts.org/api/v2/product/3017620422000.json").mock(
+        return_value=httpx.Response(404, json={"status": 0})
+    )
+    with TestClient(app) as client:
+        response = client.get("/product/3017620422000")
+    assert 'name="front_photo"' in response.text
+    assert 'value="3017620422000"' in response.text
